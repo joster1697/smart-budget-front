@@ -1,12 +1,22 @@
 import "./App.css";
-import { Routes, Route } from "react-router-dom";
-import Register from "./pages/Register";
-import Login from "./pages/Login";
-import Sidebar from "./components/menus/Sidebar.jsx";
-import Footer from "./components/menus/Footer.jsx";
-import Dashboard from "./pages/Dashboard.tsx";
+import { useEffect } from "react";
+import AppRoutes from "./routes/AppRoutes";
+import { useAppDispatch, useAppSelector } from "./store/hooks";
+import { initializeAuth } from "./store/slices/authSlice";
+// import Sidebar from "./components/menus/Sidebar.jsx";
+// import Footer from "./components/menus/Footer.jsx";
 
 function App() {
+  const dispatch = useAppDispatch();
+  const isInitializing = useAppSelector((state) => state.auth.isInitializing);
+
+  useEffect(() => {
+    dispatch(initializeAuth());
+  }, [dispatch]);
+
+  // Mientras se valida el token, no renderiza rutas para evitar redirecciones falsas
+  if (isInitializing) return null;
+
   return (
     <section className="app-layout flex flex-col min-h-screen">
       {/* <section className="flex flex-grow">
@@ -17,11 +27,7 @@ function App() {
       </section>
       <Footer className="flex-col" /> */}
       <main>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/Dashboard" element={<Dashboard />} />
-        </Routes>
+        <AppRoutes />
       </main>
     </section>
   );

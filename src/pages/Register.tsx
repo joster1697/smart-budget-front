@@ -1,5 +1,6 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import authService from "../services/authService";
 
 interface FormData {
   username: string;
@@ -53,6 +54,10 @@ export default function Register() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateForm()) {
+
+      const response = await authService.login(formData);
+
+
       console.log("Formulario Enviado:", formData);
       navigate("/register");
     }

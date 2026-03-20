@@ -12,8 +12,8 @@
 
 // export default Dashboard;
 
-import AddTransactionBtn from "../components/ui/buttons/AddTransactionBtn.jsx";
-import Searchbar from "../components/menus/Searchbar.jsx";
+import AddTransactionBtn from "../components/ui/buttons/AddTransactionBtn.js";
+// import Searchbar from "../components/ui/Searchbar.jsx";
 
 function Dashboard() {
   function transaction() {
@@ -24,7 +24,7 @@ function Dashboard() {
     <section className="container bg-gray-500 rounded px-4 py-4 mx-auto my-6 max-w-6xl">
       <div className="mb-4">
         {/* Searchbar */}
-        <Searchbar />
+        {/* <Searchbar /> */}
       </div>
       <section className="flex flex-col md:flex-row items-center justify-between gap-6 bg-gray-300 rounded p-6">
         {/* Header */}

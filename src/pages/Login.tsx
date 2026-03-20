@@ -1,5 +1,7 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import authService from "../services/authService";
+import { useAppDispatch } from "../store/hooks";
 
 interface FormData {
   email: string;
@@ -12,14 +14,11 @@ interface FormErrors {
   general?: string;
 }
 
-interface LoginResponse {
-  token: string;
-}
-
 export default function Login() {
   const [formData, setFormData] = useState<FormData>({ email: "", password: "" });
   const [errors, setErrors] = useState<FormErrors>({});
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -32,15 +31,26 @@ export default function Login() {
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await fetch("api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      const data: LoginResponse = await response.json();
-      if (response.ok) {
-        localStorage.setItem("token", data.token);
-        window.location.href = "/perfil";
+      console.log("formdata: ", formData);
+      
+      // const response = await fetch("api/login", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(formData),
+      // });
+      // const data: LoginResponse = await response.json();
+
+      const response = await authService.login(formData);
+
+      if (response.tokens.accessToken) {
+        dispatch({
+          type: "auth/setCredentials",
+          payload: {
+            user: response.user,
+            token: response.tokens.accessToken,
+          },
+        });
+          navigate("/dashboard");
       } else {
         setErrors({ general: "Credenciales Incorrectas" });
       }
