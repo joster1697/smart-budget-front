@@ -14,7 +14,7 @@ function Footer() {
 
   return (
     <section>
-      <footer className="footer bg-gray-900 text-white p-4 text-center w-100 line-height-2">
+      <footer className="footer bg-gray-900 text-white p-4 text-center line-height-2 w">
         <p className="text-sm">
           &copy; {currentYear} Smart Budget. All rights reserved.
         </p>
