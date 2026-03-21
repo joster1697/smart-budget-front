@@ -54,6 +54,7 @@ export default function Login() {
       } else {
         setErrors({ general: "Credenciales Incorrectas" });
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setErrors({ general: "Error al conectar con el servidor" });
     }

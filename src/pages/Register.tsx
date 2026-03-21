@@ -1,23 +1,26 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import authService from "../services/authService";
+import { useAppDispatch } from "../store/hooks";
 
 interface FormData {
-  username: string;
+  name: string;
   email: string;
   password: string;
 }
 
 interface FormErrors {
-  username?: string;
+  name?: string;
   email?: string;
   password?: string;
+  general?: string; // added to form errors
 }
 
 export default function Register() {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [formData, setformData] = useState<FormData>({
-    username: "",
+    name: "",
     email: "",
     password: "",
   });
@@ -34,8 +37,8 @@ export default function Register() {
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
-    if (!formData.username) {
-      newErrors.username = "El campo Username es necesario";
+    if (!formData.name) {
+      newErrors.name = "El campo Nombre es necesario";
     }
     if (!formData.email) {
       newErrors.email = "El campo Email es necesario";
@@ -51,15 +54,33 @@ export default function Register() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (validateForm()) {
+    try {
+      console.log("FormData:", formData);
+      if (validateForm()) {
+        const response = await authService.register(formData);
 
-      const response = await authService.login(formData);
-
-
-      console.log("Formulario Enviado:", formData);
-      navigate("/register");
+        if (response.user.email) {
+          dispatch({
+            type: "auth/setCredentials",
+            payload: {
+              user: response.user,
+              token: response.tokens.accessToken,
+            },
+          });
+          navigate("/dashboard");
+        } else {
+          setErrors({ general: "El Usuario ya existe" });
+        }
+      }
+      // console.log("Formulario Enviado:", formData);
+      // navigate("/register");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      setErrors({
+        general: error.message || "Error al conectar con el servidor",
+      });
     }
   };
 
@@ -77,26 +98,21 @@ export default function Register() {
         </div>
 
         <main className="bg-blue-600 p-5 rounded-bl-lg rounded-br-lg">
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleRegister}>
             <div className=" flex flex-col">
-              <label
-                className="m-2 text-lg text-left font-bold"
-                htmlFor="username"
-              >
-                - Username:
+              <label className="m-2 text-lg text-left font-bold" htmlFor="name">
+                - Name:
               </label>
               <input
                 className="m-2 border-2 p-2 border-white rounded-md bg-white text-black"
                 type="text"
-                id="username"
-                name="username"
-                placeholder=" Enter your username"
+                id="name"
+                name="name"
+                placeholder=" Enter your name"
                 onChange={handleChange}
-                value={formData.username}
+                value={formData.name}
               />
-              {errors.username && (
-                <span className="error">{errors.username}</span>
-              )}
+              {errors.name && <span className="error">{errors.name}</span>}
               <label
                 className="m-2 text-lg text-left font-bold"
                 htmlFor="email"
@@ -130,6 +146,13 @@ export default function Register() {
               />
               {errors.password && (
                 <span className="error">{errors.password}</span>
+              )}
+            </div>
+            <div>
+              {errors.general && (
+                <p style={{ color: "#fff", fontWeight: "bold" }}>
+                  {errors.general}!
+                </p>
               )}
             </div>
             <div className="mt-3">
