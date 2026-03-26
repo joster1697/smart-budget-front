@@ -1,129 +1,116 @@
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import authService from "../services/authService";
 import { useAppDispatch } from "../store/hooks";
-
-interface FormData {
-  email: string;
-  password: string;
-}
-
-interface FormErrors {
-  email?: string;
-  password?: string;
-  general?: string;
-}
+import { setCredentials } from "../store/slices/authSlice";
+import InputField from "../components/ui/InputField";
+import Button from "../components/ui/Button";
+import { BankIcon, MailIcon } from "../components/ui/Icons";
+import { loginSchema, LoginFormValues } from "../lib/validations/authSchemas";
 
 export default function Login() {
-  const [formData, setFormData] = useState<FormData>({ email: "", password: "" });
-  const [errors, setErrors] = useState<FormErrors>({});
+  // Error de servidor separado de los errores de validación del form
+  const [serverError, setServerError] = useState<string | null>(null);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    // Valida al salir del campo; revalida en tiempo real una vez que el campo tuvo error
+    mode: "onTouched",
+  });
 
-  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const onSubmit = async (data: LoginFormValues) => {
+    setServerError(null);
     try {
-      console.log("formdata: ", formData);
-      
-      // const response = await fetch("api/login", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(formData),
-      // });
-      // const data: LoginResponse = await response.json();
-
-      const response = await authService.login(formData);
-
-      if (response.tokens.accessToken) {
-        dispatch({
-          type: "auth/setCredentials",
-          payload: {
-            user: response.user,
-            token: response.tokens.accessToken,
-          },
-        });
-          navigate("/dashboard");
-      } else {
-        setErrors({ general: "Credenciales Incorrectas" });
-      }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      setErrors({ general: "Error al conectar con el servidor" });
+      const response = await authService.login(data);
+      dispatch(setCredentials({ user: response.user, token: response.tokens.accessToken }));
+      navigate("/dashboard");
+    } catch {
+      setServerError("Error al conectar con el servidor");
     }
   };
   return (
-    <section>
-      <div className="bg-black text-white p-10 rounded-tl-lg rounded-tr-lg text-center">
-        <h1>
-          <em>Login to Smart</em>
-          <span className="text-blue-600 font-bold">
-            <em>Budget</em>
-          </span>
-          !
-        </h1>
+    <main className="w-full min-h-screen justify-center flex flex-col gap-9 p-6">
+      <div className="w-full flex flex-col items-center gap-6">
+        <div
+            className="h-[75px] w-[65px] bg-on-secondary-container flex items-center justify-center rounded-xl"
+            aria-hidden="true"
+          >
+          <BankIcon size={36} className="text-primary" />
+        </div>
+        <div className="text-center">
+          <h1 className="font-extrabold tracking-tight text-[2rem] text-on-background">
+            Smart Budget
+          </h1>
+          <p className="text-[1rem] text-on-background">
+            Manage your finances with ease
+          </p>
+        </div>
       </div>
 
-      <main className="bg-blue-600 p-5 rounded-bl-lg rounded-br-lg">
-        <form onSubmit={handleLogin}>
-          <div className=" flex flex-col">
-            <label className="m-2 text-lg text-left font-bold" htmlFor="email">
-              - Email:
-            </label>
-            <input
-              className="m-2 border-2 p-2 border-white rounded-md bg-white text-black"
-              type="email"
+      <section aria-label="Formulario de inicio de sesión" className="bg-surface-container-lowest p-8 rounded-xl shadow-lg">
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+          <div className="flex flex-col gap-5">
+            <InputField
               id="email"
-              name="email"
-              placeholder=" Enter your email"
-              onChange={handleChange}
-              value={formData.email}
+              type="email"
+              label="Correo Electrónico"
+              placeholder="nombre@ejemplo.com"
+              error={errors.email?.message}
+              leftIcon={<MailIcon size={16} className="text-outline-variant" />}
+              {...register("email")}
             />
-            {errors.email && <span className="error">{errors.email}</span>}
-            <label
-              className="m-2 text-lg text-left font-bold"
-              htmlFor="password"
-            >
-              - Password:
-            </label>
-            <input
-              className="m-2 border-2 p-2 border-white rounded-md bg-white text-black shadow-lg"
-              type="password"
-              id="password"
-              name="password"
-              placeholder=" Create a password"
-              onChange={handleChange}
-              value={formData.password}
-            />
-            {errors.password && (
-              <span className="error">{errors.password}</span>
+
+            <div className="flex flex-col gap-1.5">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-bold">Contraseña</span>
+                <button
+                  type="button"
+                  className="text-[0.75rem] font-bold text-primary cursor-pointer hover:underline"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+              <InputField
+                id="password"
+                type="password"
+                placeholder="Ingresa tu contraseña"
+                error={errors.password?.message}
+                {...register("password")}
+              />
+            </div>
+
+            {serverError && (
+              <span className="text-xs text-error font-medium text-center">{serverError}</span>
             )}
 
-            <div className="mt-3">
-              <button
-                type="submit"
-                className="mt-1 w-full text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2.5"
-              >
-                Login
-              </button>
-              <button
-                type="button"
-                className="mt-4 w-full text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2.5"
-                onClick={() => navigate("/register")}
-              >
-                New here? <span className="font-bold"><em>Register</em></span>
-              </button>
-            </div>
+            <Button type="submit" variant="primary" size="lg" fullWidth loading={isSubmitting}>
+              Iniciar Sesión
+            </Button>
+            
           </div>
         </form>
-      </main>
-    </section>
+      </section>
+
+      <div className="text-center">
+        <p className="text-[0.9rem]">
+          ¿Aún no tienes una cuenta?{" "}
+          <button
+            type="button"
+            className="font-bold text-primary cursor-pointer hover:underline"
+            onClick={() => navigate("/register")}
+          >
+            Crear Registro
+          </button>
+        </p>
+      </div>
+    </main>
   );
 }

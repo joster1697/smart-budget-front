@@ -1,13 +1,102 @@
 @import "tailwindcss";
 
+/* =============================================
+   BRANDING TOKENS — Material Design 3
+   Uso: bg-{token}, text-{token}, border-{token}
+   ej: bg-primary, text-on-surface, border-outline
+   ============================================= */
+@theme {
+
+  /* ── PRIMARY ─────────────────────────────────────────────
+     Acciones principales, botones CTA, links activos,
+     indicadores de progreso, FAB (floating action button).
+     Siempre usar text-on-primary encima de bg-primary.      */
+  --color-primary:                    #38e07b;  /* bg-primary         → botón "Iniciar Sesión", tab activo           */
+  --color-on-primary:                 #122118;  /* text-on-primary     → texto/iconos sobre bg-primary               */
+  --color-primary-container:          #a6f5c0;  /* bg-primary-container → chips activos, badges de éxito            */
+  --color-on-primary-container:       #00210c;  /* text-on-primary-container → texto sobre primary-container        */
+  --color-primary-fixed:              #38e07b;  /* bg-primary-fixed    → variante fija (igual en dark/light)        */
+  --color-primary-fixed-dim:          #00c361;  /* bg-primary-fixed-dim → variante fija atenuada                    */
+  --color-on-primary-fixed:           #00210c;  /* text-on-primary-fixed → texto sobre primary-fixed                */
+  --color-on-primary-fixed-variant:   #005226;  /* text-on-primary-fixed-variant → texto secundario en primary-fixed */
+  --color-inverse-primary:            #5dfd94;  /* text-inverse-primary → primary en superficies oscuras (dark mode) */
+
+  /* ── SECONDARY ───────────────────────────────────────────
+     Botones secundarios, selecciones, filtros, iconos
+     de navegación seleccionados, elementos de soporte.       */
+  --color-secondary:                  #4d6353;  /* bg-secondary        → botón secundario, nav item activo           */
+  --color-on-secondary:               #ffffff;  /* text-on-secondary   → texto/iconos sobre bg-secondary            */
+  --color-secondary-container:        #cfebd4;  /* bg-secondary-container → chips sin seleccionar, fondos de listas */
+  --color-on-secondary-container:     #0a1f12;  /* text-on-secondary-container → texto sobre secondary-container    */
+  --color-secondary-fixed:            #cfebd4;  /* bg-secondary-fixed  → variante fija                              */
+  --color-secondary-fixed-dim:        #b3cfb9;  /* bg-secondary-fixed-dim → variante fija atenuada                  */
+  --color-on-secondary-fixed:         #0a1f12;  /* text-on-secondary-fixed → texto sobre secondary-fixed            */
+  --color-on-secondary-fixed-variant: #364b3c;  /* text-on-secondary-fixed-variant → texto secundario en fixed      */
+
+  /* ── TERTIARY ────────────────────────────────────────────
+     Acentos informativos, highlights, iconos decorativos,
+     tarjetas de información, tooltips, etiquetas de datos.   */
+  --color-tertiary:                   #3b6470;  /* bg-tertiary         → iconos informativos, gráficas de contraste  */
+  --color-on-tertiary:                #ffffff;  /* text-on-tertiary    → texto/iconos sobre bg-tertiary              */
+  --color-tertiary-container:         #beeaf7;  /* bg-tertiary-container → tarjetas de info, tooltips, banners       */
+  --color-on-tertiary-container:      #001f26;  /* text-on-tertiary-container → texto sobre tertiary-container       */
+  --color-tertiary-fixed:             #beeaf7;  /* bg-tertiary-fixed   → variante fija                               */
+  --color-tertiary-fixed-dim:         #a2ceda;  /* bg-tertiary-fixed-dim → variante fija atenuada                    */
+  --color-on-tertiary-fixed:          #001f26;  /* text-on-tertiary-fixed → texto sobre tertiary-fixed               */
+  --color-on-tertiary-fixed-variant:  #224c58;  /* text-on-tertiary-fixed-variant → texto secundario en fixed        */
+
+  /* ── ERROR ───────────────────────────────────────────────
+     Validaciones, mensajes de error, bordes de inputs
+     inválidos, iconos de alerta.                             */
+  --color-error:                      #ba1a1a;  /* text-error / border-error → borde de input inválido, texto error  */
+  --color-on-error:                   #ffffff;  /* text-on-error       → texto/iconos sobre bg-error                 */
+  --color-error-container:            #ffdad6;  /* bg-error-container  → fondo de mensaje de error, alert box        */
+  --color-on-error-container:         #410002;  /* text-on-error-container → texto dentro de error-container        */
+
+  /* ── SURFACE (capas de la UI) ────────────────────────────
+     Sistema de profundidad visual. Más alto el nivel,
+     más oscuro (más elevado visualmente).                    */
+  --color-background:                 #f6f8f7;  /* bg-background       → fondo raíz de toda la app                  */
+  --color-on-background:              #122118;  /* text-on-background  → texto principal sobre el fondo              */
+  --color-surface:                    #f6f8f7;  /* bg-surface          → fondo base de cards, formularios            */
+  --color-on-surface:                 #122118;  /* text-on-surface     → texto principal en la app                   */
+  --color-on-surface-variant:         #424943;  /* text-on-surface-variant → texto secundario, placeholders, labels  */
+  --color-surface-variant:            #dee5dd;  /* bg-surface-variant  → fondo de inputs, chips sin seleccionar      */
+  --color-surface-bright:             #ffffff;  /* bg-surface-bright   → modales, popovers (nivel más alto)          */
+  --color-surface-dim:                #e2e4e3;  /* bg-surface-dim      → estado desactivado, overlays suaves         */
+  --color-surface-tint:               #38e07b;  /* bg-surface-tint     → tint de primary sobre surface               */
+
+  /* Contenedores con niveles de elevación (lowest → highest) */
+  --color-surface-container-lowest:   #ffffff;  /* bg-surface-container-lowest  → nivel 0, blanco puro               */
+  --color-surface-container-low:      #f0f2f1;  /* bg-surface-container-low     → nivel 1, fondo de página           */
+  --color-surface-container:          #eaeced;  /* bg-surface-container         → nivel 2, cards principales ⭐       */
+  --color-surface-container-high:     #e4e6e5;  /* bg-surface-container-high    → nivel 3, sidebar, nav lateral       */
+  --color-surface-container-highest:  #dee0df;  /* bg-surface-container-highest → nivel 4, bottom sheets, drawers    */
+
+  /* Superficies inversas (snackbars, toasts) */
+  --color-inverse-surface:            #122118;  /* bg-inverse-surface  → fondo de snackbars/toasts (oscuro)           */
+  --color-inverse-on-surface:         #f6f8f7;  /* text-inverse-on-surface → texto sobre inverse-surface             */
+
+  /* ── OUTLINE ─────────────────────────────────────────────
+     Bordes y separadores.                                    */
+  --color-outline:                    #727972;  /* border-outline      → borde de inputs con énfasis, dividers        */
+  --color-outline-variant:            #c1c9c0;  /* border-outline-variant → bordes sutiles, separadores ligeros ⭐   */
+
+  /* ── TIPOGRAFÍA ──────────────────────────────────────────  */
+  --font-sans: "Manrope", system-ui, Helvetica, Arial, sans-serif;
+
+  /* Alias semánticos de conveniencia */
+  --color-muted:  #424943; /* = on-surface-variant → text-muted para placeholders e íconos inactivos */
+}
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Manrope",system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: #122118;
+  background-color: #f6f8f7;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -20,40 +109,13 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
 @media (prefers-color-scheme: light) {
@@ -63,8 +125,5 @@ button:focus-visible {
   }
   a:hover {
     color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
   }
 }
