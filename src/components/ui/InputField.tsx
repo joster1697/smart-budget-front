@@ -1,5 +1,5 @@
-import { InputHTMLAttributes, ReactNode, useState, forwardRef } from "react";
-import { LockIcon, EyeIcon, EyeOffIcon } from "./Icons";
+import { forwardRef, InputHTMLAttributes, ReactNode, useState } from "react";
+import { EyeIcon, EyeOffIcon, IconLockFilled } from "./Icons";
 
 interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -30,14 +30,14 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(function InputF
   const resolvedType = isPassword ? (showPassword ? "text" : "password") : type;
 
   // Password: lock icon always on the left
-  const resolvedLeftIcon = isPassword ? <LockIcon size={16} /> : leftIcon;
+  const resolvedLeftIcon = isPassword ? <IconLockFilled size={20} className="text-outline"/> : leftIcon;
   // Password: eye toggle only visible when focused
   const showEyeToggle = isPassword && isFocused;
 
   return (
-    <div className="flex flex-col gap-1.5 w-full">
+    <div className="flex flex-col gap-2 w-full">
       {label && (
-        <label htmlFor={id} className="text-sm font-bold text-left">
+        <label htmlFor={id} className="text-sm font-semibold text-left text-on-surface">
           {label}
         </label>
       )}
@@ -57,11 +57,10 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(function InputF
           onFocus={(e) => { setIsFocused(true); onFocus?.(e); }}
           onBlur={(e) => { setIsFocused(false); onBlur?.(e); }}
           className={[
-            "w-full bg-surface-container-low text-on-surface rounded-lg border-2 px-3 py-3 text-sm",
+            "w-full bg-surface-container-low border border-transparent text-on-surface rounded-xl px-4 py-4",
             "placeholder:text-outline-variant outline-none transition-all duration-200",
-            "border-outline-variant",
-            "focus:border-primary focus:ring-2 focus:ring-primary/20",
-            error ? "border-error focus:border-error focus:ring-error/20" : "",
+            "focus:border-primary focus:ring-2 focus:ring-primary focus:bg-surface-bright",
+            error ? "focus:ring-error/20" : "",
             resolvedLeftIcon ? "pl-10" : "",
             (showEyeToggle || rightIcon) ? "pr-10" : "",
             className,
@@ -81,7 +80,7 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(function InputF
             tabIndex={-1}
             aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
           >
-            {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+            {showPassword ? <EyeOffIcon size={20} className="text-outline" /> : <EyeIcon size={20} className="text-outline" />}
           </button>
         ) : (
           !isPassword && rightIcon && (

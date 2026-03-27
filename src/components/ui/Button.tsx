@@ -15,7 +15,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-primary text-on-primary border-transparent hover:brightness-95",
+    "bg-primary text-on-primary border-transparent hover:brightness-105 hover:translate-y-[-2px]",
   secondary:
     "bg-white text-on-surface border-outline-variant shadow-sm hover:bg-surface-container-low",
   ghost:
@@ -27,7 +27,7 @@ const variantStyles: Record<ButtonVariant, string> = {
 const sizeStyles: Record<ButtonSize, string> = {
   sm: "text-xs px-3 py-2 gap-1.5",
   md: "text-sm px-5 py-3 gap-2",
-  lg: "text-sm px-6 py-4 gap-2",
+  lg: "text-lg px-6 py-5 gap-3",
 };
 
 export default function Button({
@@ -49,10 +49,10 @@ export default function Button({
       disabled={isDisabled}
       className={[
         // Base
-        "inline-flex items-center justify-center font-bold rounded-lg border-2",
+        "inline-flex items-center justify-center font-black rounded-xl shadow-xl shadow-primary/20",
         "transition-all duration-150 cursor-pointer select-none",
         // Press effect
-        "active:scale-[0.97] active:brightness-90",
+        "active:scale-[0.98]",
         // Disabled
         "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",
         // Variant

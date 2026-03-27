@@ -35,10 +35,25 @@ export const MailIcon = (props: IconProps) => (
   </Icon>
 );
 
+export const IconMailFilled = (props: IconProps) => (
+  <Icon {...props} fill="currentColor" stroke="none">
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <path d="M22 7.535v9.465a3 3 0 0 1 -2.824 2.995l-.176 .005h-14a3 3 0 0 1 -2.995 -2.824l-.005 -.176v-9.465l9.445 6.297l.116 .066a1 1 0 0 0 .878 0l.116 -.066l9.445 -6.297z" />
+    <path d="M19 4c1.08 0 2.027 .57 2.555 1.427l-9.555 6.37l-9.555 -6.37a2.999 2.999 0 0 1 2.354 -1.42l.201 -.007h14z" />
+  </Icon>
+);
+
 export const LockIcon = (props: IconProps) => (
   <Icon {...props}>
     <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+  </Icon>
+);
+
+export const IconLockFilled = (props: IconProps) => (
+  <Icon {...props} fill="currentColor" stroke="none">
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <path d="M12 2a5 5 0 0 1 5 5v3a3 3 0 0 1 3 3v6a3 3 0 0 1 -3 3h-10a3 3 0 0 1 -3 -3v-6a3 3 0 0 1 3 -3v-3a5 5 0 0 1 5 -5m0 12a2 2 0 0 0 -1.995 1.85l-.005 .15a2 2 0 1 0 2 -2m0 -10a3 3 0 0 0 -3 3v3h6v-3a3 3 0 0 0 -3 -3" />
   </Icon>
 );
 
@@ -61,6 +76,18 @@ export const UserIcon = (props: IconProps) => (
   <Icon {...props}>
     <circle cx="12" cy="8" r="4" />
     <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+  </Icon>
+);
+
+export const IconBrain = (props: IconProps) => (
+  <Icon {...props}>
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <path d="M15.5 13a3.5 3.5 0 0 0 -3.5 3.5v1a3.5 3.5 0 0 0 7 0v-1.8" />
+    <path d="M8.5 13a3.5 3.5 0 0 1 3.5 3.5v1a3.5 3.5 0 0 1 -7 0v-1.8" />
+    <path d="M17.5 16a3.5 3.5 0 0 0 0 -7h-.5" />
+    <path d="M19 9.3v-2.8a3.5 3.5 0 0 0 -7 0" />
+    <path d="M6.5 16a3.5 3.5 0 0 1 0 -7h.5" />
+    <path d="M5 9.3v-2.8a3.5 3.5 0 0 1 7 0v10" />
   </Icon>
 );
 
@@ -91,6 +118,15 @@ export const ChevronDownIcon = (props: IconProps) => (
 export const ChevronRightIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="m9 18 6-6-6-6" />
+  </Icon>
+);
+
+export const IconArrowRight = (props: IconProps) => (
+  <Icon {...props}>
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <path d="M5 12l14 0" />
+    <path d="M13 18l6 -6" />
+    <path d="M13 6l6 6" />
   </Icon>
 );
 
@@ -201,5 +237,23 @@ export const LogoutIcon = (props: IconProps) => (
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
     <polyline points="16 17 21 12 16 7" />
     <line x1="21" x2="9" y1="12" y2="12" />
+  </Icon>
+);
+
+export const IconHelpFilled = (props: IconProps) => (
+  <Icon {...props} fill="currentColor" stroke="none">
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <path d="M17 3.34a10 10 0 1 1 -10 17.32a10 10 0 0 1 10 -17.32m-5 12.66a1 1 0 0 0 -.993 .883l-.007 .127a1 1 0 0 0 1.993 .117l.007 -.127a1 1 0 0 0 -1 -1m1.173 -9.856a3.6 3.6 0 0 0 -3.97 1.252a1 1 0 0 0 1.512 1.304l.082 -.096a1.6 1.6 0 1 1 1.846 2.462a2.49 2.49 0 0 0 -1.641 2.49a1 1 0 0 0 1.996 .004v-.117a.5 .5 0 0 1 .259 -.466l.075 -.034a3.61 3.61 0 0 0 2.338 -3.47a3.6 3.6 0 0 0 -2.497 -3.329" />
+  </Icon>
+);
+
+export const IconWorld = (props: IconProps) => (
+  <Icon {...props}>
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+    <path d="M3.6 9h16.8" />
+    <path d="M3.6 15h16.8" />
+    <path d="M11.5 3a17 17 0 0 0 0 18" />
+    <path d="M12.5 3a17 17 0 0 1 0 18" />
   </Icon>
 );
