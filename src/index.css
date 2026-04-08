@@ -65,6 +65,7 @@
   --color-surface-bright:             #ffffff;  /* bg-surface-bright   → modales, popovers (nivel más alto)          */
   --color-surface-dim:                #e2e4e3;  /* bg-surface-dim      → estado desactivado, overlays suaves         */
   --color-surface-tint:               #38e07b;  /* bg-surface-tint     → tint de primary sobre surface               */
+  --color-nav-inactive:               #96c5a9; /* text-nav-inactive → iconos/labels del navbar cuando no están activos */
 
   /* Contenedores con niveles de elevación (lowest → highest) */
   --color-surface-container-lowest:   #ffffff;  /* bg-surface-container-lowest  → nivel 0, blanco puro               */

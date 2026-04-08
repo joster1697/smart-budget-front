@@ -18,7 +18,7 @@ function App() {
   if (isInitializing) return null;
 
   return (
-    <section className="app-layout flex flex-col min-h-screen">
+    <section className="flex flex-col min-h-screen">
       {/* <section className="flex flex-grow">
         <Sidebar />
         <section className="flex-grow p-4">
