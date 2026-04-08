@@ -20,7 +20,11 @@ import {
   EmptyCheck,
   BankIcon,
 } from "../components/ui/Icons";
-import { object } from "zod";
+import {
+  IconArrowRight,
+  IconBrain,
+} from "@tabler/icons-react";
+import { setCredentials } from "../store/slices/authSlice";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -48,13 +52,12 @@ export default function Register() {
       const response = await authService.register(data);
 
       if (response.user.email) {
-        dispatch({
-          type: "auth/setCredentials",
-          payload: {
+        dispatch(
+          setCredentials({
             user: response.user,
             token: response.tokens.accessToken,
-          },
-        });
+          }),
+        );
         navigate("/dashboard");
       } else {
         setServerError("El Usuario ya existe");
@@ -70,175 +73,229 @@ export default function Register() {
   };
 
   return (
-    <section className="w-full min-h-screen justify-center flex flex-col gap-9 p-6 ">
-      <div className="w-full flex flex-row items-center gap-6">
-        <div className="w-1/3">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Ut, saepe
-          iure excepturi commodi, sit eos itaque numquam et perferendis possimus
-          amet temporibus aspernatur? Quam, tempore minima soluta provident
-          dolores quibusdam?
+    <main className="w-full min-h-screen flex flex-row">
+      {/* Panel izquierdo con beneficios */}
+      <section className="relative hidden md:flex flex-col justify-between min-w-1/2 lg:min-w-[45%] bg-inverse-surface p-8 md:p-16">
+        <div
+          className="absolute inset-0 opacity-10 pointer-events-none"
+          style={{ backgroundImage: "radial-gradient(circle at 2px 2px, #38e07b 1px, transparent 0)", backgroundSize: "32px 32px" }}
+        ></div>
+        <div className="relative z-10 w-full h-full">
+          <h2 className="text-primary text-2xl tracking-tighter font-black uppercase mb-16">
+            {import.meta.env.VITE_APP_NAME}
+          </h2>
+          <h1 className="text-inverse-on-surface text-5xl lg:text-7xl leading-[1.1] font-black mb-8 tracking-[-0.033em]">
+            Crea tu <br /> <span className="text-primary">Cuenta</span>
+            <br /> Financiera.
+          </h1>
+          <h3 className="text-[#96c5a9] max-w-md text-xl leading-relaxed">
+            Únete a SmartBudget hoy y comienza a dominar tu arquitectura financiera con precisión.
+          </h3>
+        </div>
+        <div className="relative z-10 mt-12 md:mt-0">
+          <div className="flex items-center gap-4 p-6 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 max-w-sm">
+            <div className="min-w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+              <IconBrain size={28} className="text-primary" />
+            </div>
+            <div>
+              <p className="text-surface-bright font-bold text-base">
+                Gestión Inteligente
+              </p>
+              <p className="text-[#96c5a9] text-sm">
+                Tu plataforma de confianza para organizar y optimizar todas tus finanzas.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Panel derecho con formulario */}
+      <div className="relative w-full flex gap-9 p-6 md:p-14 justify-center items-center md:bg-surface-container-lowest">
+        {/* Botones de ayuda e idioma — anclados al panel derecho */}
+        <div className="absolute top-6 right-6 flex gap-2 md:flex">
+          {/* Estos botones pueden estar ocultos en mobile si lo prefieres */}
         </div>
 
-        <main>
-          <section className="bg-surface-container-lowest p-8 rounded-xl shadow-lg">
-            <div className="h-[75px] w-[65px] bg-on-secondary-container flex items-center justify-center rounded-xl">
+        <div className="w-full flex flex-col max-w-[448px] gap-9">
+          {/* Cabecera — logo y textos */}
+          <div className="flex flex-col items-center md:items-start gap-6">
+            <div
+              className="h-[75px] w-[65px] bg-on-secondary-container flex items-center justify-center rounded-xl"
+              aria-hidden="true"
+            >
               <BankIcon size={36} className="text-primary" />
             </div>
-            <div className=" text-black p-10 rounded-tl-lg rounded-tr-lg text-center font font-extrabold text-[2rem]">
-              <h1>Smart Budget</h1>
+            <div className="text-center md:text-left">
+              <h1 className="font-black tracking-tight text-4xl text-on-surface mb-3">
+                <span className="md:hidden uppercase">{import.meta.env.VITE_APP_NAME}</span>
+                <span className="hidden md:inline">Crear Cuenta</span>
+              </h1>
+              <p className="text-lg text-on-surface-variant">
+                <span className="md:hidden">Comienza tu viaje financiero hoy mismo.</span>
+                <span className="hidden md:inline">Registrate para acceder a tu santuario financiero.</span>
+              </p>
             </div>
+          </div>
+
+          <section
+            aria-label="Formulario de registro"
+            className="w-full bg-surface-container-lowest p-8 md:p-0 rounded-xl shadow-lg md:shadow-none"
+          >
             <form onSubmit={handleSubmit(onSubmit)} noValidate>
-              <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-6">
                 <InputField
                   id="name"
                   type="text"
-                  label="Nombre"
+                  label="Nombre Completo"
                   placeholder="Ej: Juan Alvarez"
                   error={errors.name?.message}
                   leftIcon={
-                    <UserIcon size={16} className="text-outline-variant" />
+                    <UserIcon size={20} className="text-outline-variant" />
                   }
                   {...register("name")}
                 />
-                {serverError && <span className="error">{serverError}</span>}
+
                 <InputField
                   id="email"
                   type="email"
-                  label="Correo Electronico"
+                  label="Correo Electrónico"
                   error={errors.email?.message}
                   placeholder="nombre@ejemplo.com"
                   leftIcon={
-                    <MailIcon size={16} className="text-outline-variant" />
+                    <MailIcon size={20} className="text-outline-variant" />
                   }
                   {...register("email")}
                 />
-                {errors.email && <span className="error">{serverError}</span>}
+
                 <InputField
                   id="password"
                   type="password"
                   label="Contraseña"
                   error={errors.password?.message}
-                  placeholder="Cree una contraseña"
+                  placeholder="Cree una contraseña segura"
                   leftIcon={
-                    <LockIcon size={16} className="text-outline-variant" />
+                    <LockIcon size={20} className="text-outline-variant" />
                   }
                   {...register("password")}
                 />
-                {/* Progreso de requisitos */}
-                <section>
-                  {/* --------------------------------------------------- */}
-                  {passwordValue && (
-                    <div className="mx-2 p-3 bg-white/10 rounded-lg border border-white/20 ">
-                      {/* Contador de progreso */}
-                      <div className="bg-surface-container rounded-1">
-                        <span className="text-white text-sm">Progreso: </span>
-                        <span className="text-white text-sm font-semibold">
-                          {countMetRequirements()} de{" "}
-                          {PASSWORD_REQUIREMENTS.length} requisitos
-                        </span>
-                      </div>
 
-                      {/* Grid de requisitos con .map */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4  p-4 bg-surface-container rounded">
-                        {PASSWORD_REQUIREMENTS.map((req) => {
-                          const isMet = passwordValid[req.id];
-                          return (
-                            <div
-                              key={req.id}
-                              className="flex items-center gap-2"
-                            >
-                              <span
-                                className={
-                                  isMet ? "text-green-400" : "text-gray-500"
-                                }
-                              >
-                                {isMet ? (
-                                  <FilledCheck size={24} />
-                                ) : (
-                                  <EmptyCheck size={24} />
-                                )}
-                              </span>
-                              <span
-                                className={
-                                  isMet ? "text-green-200" : "text-gray-500"
-                                }
-                              >
-                                {req.label}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
+                {/* Progreso de requisitos de contraseña */}
+                {passwordValue && (
+                  <div className="p-4 bg-white/5 rounded-lg border border-white/10 backdrop-blur-sm">
+                    <div className="mb-3">
+                      <span className="text-sm text-on-surface-variant">Fortaleza: </span>
+                      <span className="text-sm font-semibold text-on-surface">
+                        {countMetRequirements()} de {PASSWORD_REQUIREMENTS.length} requisitos
+                      </span>
                     </div>
-                  )}
-                </section>
-                {/* --------------------------------------------------- */}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {PASSWORD_REQUIREMENTS.map((req) => {
+                        const isMet = passwordValid[req.id];
+                        return (
+                          <div
+                            key={req.id}
+                            className="flex items-center gap-2"
+                          >
+                            <span
+                              className={
+                                isMet ? "text-green-400" : "text-on-surface-variant"
+                              }
+                            >
+                              {isMet ? (
+                                <FilledCheck size={20} />
+                              ) : (
+                                <EmptyCheck size={20} />
+                              )}
+                            </span>
+                            <span
+                              className={
+                                isMet ? "text-green-200 text-sm" : "text-on-surface-variant text-sm"
+                              }
+                            >
+                              {req.label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 <InputField
                   id="confirmPassword"
                   type="password"
-                  label="Confirmar contraseña"
+                  label="Confirmar Contraseña"
                   error={errors.confirmPassword?.message}
-                  placeholder="Confirmar contraseña"
+                  placeholder="Confirma tu contraseña"
                   leftIcon={
-                    <LockIcon size={16} className="text-outline-variant" />
+                    <LockIcon size={20} className="text-outline-variant" />
                   }
                   {...register("confirmPassword")}
                 />
-                {serverError && <span className="error">{serverError}</span>}
-                {serverError && <span className="error">{serverError}</span>}
-              </div>
-              <div>
+
                 {serverError && (
-                  <p style={{ color: "#fff", fontWeight: "bold" }}>
-                    {serverError}!
-                  </p>
+                  <span className="text-xs text-error font-medium text-center">
+                    {serverError}
+                  </span>
                 )}
-              </div>
-              <div>
-                <input type="checkbox" id="#terms&conditions" required />
-                <span>
-                  {" "}
-                  Acepto los{" "}
-                  <strong>
+
+                <div className="flex items-start gap-2 text-sm">
+                  <input 
+                    type="checkbox" 
+                    id="terms" 
+                    required 
+                    className="mt-1"
+                  />
+                  <span className="text-on-surface-variant">
+                    Acepto los{" "}
                     <a
                       href="#"
-                      style={{ color: "#000", textDecoration: "underline" }}
+                      className="text-primary font-semibold hover:underline"
                     >
-                      Terminos de Servicio
-                    </a>
-                  </strong>{" "}
-                  y la{" "}
-                  <strong>
+                      Términos de Servicio
+                    </a>{" "}
+                    y la{" "}
                     <a
                       href="#"
-                      style={{ color: "#000", textDecoration: "underline" }}
+                      className="text-primary font-semibold hover:underline"
                     >
-                      Politica de Privacidad
-                    </a>
-                  </strong>{" "}
-                  de SmartBudget
-                </span>
-              </div>
-              <div className="flex gap-4 mt-4 mb-4">
-                <Button type="submit" variant="primary" size="md" fullWidth>
-                  Create Account
-                </Button>
+                      Política de Privacidad
+                    </a>{" "}
+                    de SmartBudget
+                  </span>
+                </div>
+
                 <Button
                   type="submit"
                   variant="primary"
-                  size="md"
+                  size="lg"
                   fullWidth
-                  onClick={() => navigate("/login")}
+                  loading={isSubmitting}
+                  rightIcon={
+                    <IconArrowRight size={24} className="text-on-primary" />
+                  }
                 >
-                  Already have an account?{" "}
-                  <span className="font-bold">Login</span>
+                  Crear Cuenta
                 </Button>
               </div>
             </form>
           </section>
-        </main>
+
+          <div className="text-center">
+            <p className="text-base text-on-surface-variant">
+              ¿Ya tienes una cuenta?{" "}
+              <button
+                type="button"
+                className="ml-1 font-black text-primary cursor-pointer hover:underline"
+                onClick={() => navigate("/login")}
+              >
+                Inicia Sesión
+              </button>
+            </p>
+          </div>
+        </div>
       </div>
-    </section>
+    </main>
   );
 }
