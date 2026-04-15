@@ -1,4 +1,4 @@
-import { minLength, z } from "zod";
+import { z } from "zod";
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 
@@ -31,20 +31,6 @@ export const validatePasswordInrealTime = (password: string) => {
     hasSpecialChar: PASSWORD_RULES.hasSpecialChar.test(password),
   };
 };
-
-// Esquema de zod para validacion final (reutilizacion de mismas reglas)
-export const passwordSchema = z
-  .string()
-  .min(
-    PASSWORD_RULES.minLength,
-    `Minimo ${PASSWORD_RULES.minLength} caracteres`,
-  )
-  .regex(PASSWORD_RULES.hasUppercase, "Debe contener mayusculas")
-  .regex(PASSWORD_RULES.hasNumber, "Debe contener almenos un numero")
-  .regex(
-    PASSWORD_RULES.hasSpecialChar,
-    "Debe contener almenos un caracter especial (@$!%*?&)",
-  );
 
 // ─── Register con validacion realtime con zod ─────────────────────────────────────────────────────────────────
 
