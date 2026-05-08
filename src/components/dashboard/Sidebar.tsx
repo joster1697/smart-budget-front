@@ -1,18 +1,6 @@
 import { NavLink } from "react-router-dom";
-import { 
-  IconLayoutDashboard, 
-  IconWallet, 
-  IconReceipt, 
-  IconBrain,
-  IconLogout
-} from "@tabler/icons-react";
-
-const navItems = [
-  { to: "/dashboard/home", icon: IconLayoutDashboard, label: "Mastery" },
-  { to: "/dashboard/accounts", icon: IconWallet, label: "Accounts" },
-  { to: "/dashboard/activity", icon: IconReceipt, label: "Payments" },
-  { to: "/dashboard/reports", icon: IconBrain, label: "Intelligence" },
-];
+import { IconLogout } from "@tabler/icons-react";
+import { NAV_ITEMS } from "../../constants/navigation";
 
 export default function Sidebar() {
   return (
@@ -27,7 +15,7 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 mt-4 flex flex-col gap-2 px-4">
-        {navItems.map(({ to, icon: Icon, label }) => (
+        {NAV_ITEMS.map(({ to, icon: Icon, sidebarLabel }) => (
           <NavLink
             key={to}
             to={to}
@@ -40,7 +28,7 @@ export default function Sidebar() {
             }
           >
             <Icon size={20} />
-            {label}
+            {sidebarLabel}
           </NavLink>
         ))}
       </nav>

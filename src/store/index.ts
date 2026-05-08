@@ -5,6 +5,7 @@ import transactionsReducer from "./slices/transactionsSlice";
 import budgetsReducer from "./slices/budgetsSlice";
 import debtsReducer from "./slices/debtsSlice";
 import currencyReducer from "./slices/currencySlice";
+import chatReducer from "./slices/chatSlice";
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     budgets: budgetsReducer,
     debts: debtsReducer,
     currency: currencyReducer,
+    chat: chatReducer,
   },
 });
 

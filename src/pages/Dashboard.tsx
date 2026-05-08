@@ -4,9 +4,11 @@ import DashboardHeader from "../components/dashboard/DashboardHeader";
 import DashboardNavbar from "../components/dashboard/DashboardNavbar";
 import Sidebar from "../components/dashboard/Sidebar";
 import DesktopChatInput from "../components/dashboard/DesktopChatInput";
+import { useAgentChat } from "../hooks/useAgentChat";
 
 export default function Dashboard() {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  useAgentChat(true); // Initialize global WebSocket connection
 
   return (
     <div className="flex min-h-screen bg-background">

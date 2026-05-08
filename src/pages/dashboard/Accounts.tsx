@@ -1,6 +1,6 @@
 export default function Accounts() {
   return (
-    <section className="flex-col mt-4">
+    <section className="flex-col mt-4 max-w-[500px]">
       <h2 className="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3 px-1">
         My Accounts
       </h2>
