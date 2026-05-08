@@ -16,7 +16,7 @@ import {
 
 export default function Accounts() {
   return (
-    <div className="flex flex-col gap-6 pb-20 pt-4 px-4 sm:px-6 w-full">
+    <section className="flex flex-col gap-6 pb-20 pt-4 px-4 sm:px-6">
       <AccountAIBanner />
       <AccountHeader />
 
@@ -54,6 +54,6 @@ export default function Accounts() {
       <LinkedCreditCards />
       <SmartTools />
       <DangerZone />
-    </div>
+    </section>
   );
 }

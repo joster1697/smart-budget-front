@@ -8,7 +8,7 @@ export default function LinkedCreditCards() {
       </h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="flex items-center justify-between p-3 sm:p-4 bg-[#fbfdfc] border border-outline-variant/30 rounded-xl gap-2">
+        <div className="flex items-center justify-between p-3 sm:p-4 bg-[#fbfdfc] border-2 border-outline-variant/30 rounded-xl gap-2 hover:border-primary-fixed cursor-pointer transition-all duration-300 hover:shadow-md">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
             <div className="w-10 sm:w-12 h-10 bg-[#f0f2f1] rounded-lg flex items-center justify-center text-[#424943] shrink-0">
               <CreditCardIcon size={22} />

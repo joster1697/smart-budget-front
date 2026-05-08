@@ -30,14 +30,14 @@ export default function AccountDetails() {
             type="text"
             value={accountName}
             onChange={(e) => setAccountName(e.target.value)}
-            className="flex-1 border border-outline-variant/40 rounded-lg p-3 bg-[#fbfdfc] text-[#1B252D] font-medium focus:outline-none focus:border-[#006b3a] transition-colors"
+            className="flex-1 border border-outline-variant/40 rounded-lg p-3 bg-[#fbfdfc] text-[#1B252D] font-medium focus:outline-none focus:border-primary-fixed hover:border-primary-fixed cursor-pointer transition-all duration-300 hover:shadow-md"
           />
-          <button className="bg-[#e4e6e5]/60 hover:bg-[#e4e6e5] transition-colors px-6 py-3 rounded-lg font-bold text-[#1B252D] text-[14px]">
+          <button className="bg-[#e4e6e5]/60 transition-colors px-6 py-3 rounded-lg font-bold text-[#1B252D] text-[14px]  cursor-pointer border-2 border-primary-fixed hover:bg-primary-fixed">
             Save
           </button>
         </div>
 
-        <button className="bg-[#006b3a] hover:bg-[#005a30] transition-colors text-white px-5 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 mt-8 shadow-sm w-max">
+        <button className="bg-[#006b3a] hover:bg-[#005a30] transition-colors text-white px-5 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 mt-8 shadow-sm w-max cursor-pointer">
           <IconListDetails size={20} />
           View Transactions
         </button>
@@ -83,7 +83,7 @@ export default function AccountDetails() {
             placeholder="$0.00"
             className="flex-1 border border-outline-variant/40 rounded-lg p-2.5 bg-white text-[#1B252D] focus:outline-none focus:border-[#006b3a] transition-colors"
           />
-          <button className="bg-[#e4e6e5]/60 hover:bg-[#e4e6e5] transition-colors px-6 py-2.5 rounded-lg font-bold text-[#1B252D] text-[13px]">
+          <button className="bg-[#e4e6e5]/60 transition-colors px-6 py-2.5 rounded-lg font-bold text-[#1B252D] text-[13px] cursor-pointer border-2 border-primary-fixed hover:bg-primary-fixed">
             Apply
           </button>
         </div>
