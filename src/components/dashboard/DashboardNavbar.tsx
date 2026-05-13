@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IconMessageCircle, IconSend } from "@tabler/icons-react";
 import { useAgentChat } from "../../hooks/useAgentChat";
-import { useAppSelector } from "../../store/hooks";
+import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import { NAV_ITEMS } from "../../constants/navigation";
+import { addMessage, setThinking } from "../../store/slices/chatSlice";
 
 interface DashboardNavbarProps {
   isCollapsed: boolean;
@@ -13,6 +14,7 @@ interface DashboardNavbarProps {
 export default function DashboardNavbar({ isCollapsed, setIsCollapsed }: DashboardNavbarProps) {
   const [inputValue, setInputValue] = useState("");
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const { sendMessage } = useAgentChat();
   const isThinking = useAppSelector((state) => state.chat.isThinking);
 
@@ -32,6 +34,57 @@ export default function DashboardNavbar({ isCollapsed, setIsCollapsed }: Dashboa
     if (e.key === "Enter") {
       handleSubmit();
     }
+  };
+
+  const handleChipClick = async (item: typeof NAV_ITEMS[0]) => {
+    if (isThinking) return;
+
+    // Case: "Ver mi conversación" (Chat) - Direct redirection
+    if (item.to === "/dashboard/chat") {
+      setInputValue("");
+      setIsCollapsed(true);
+      navigate(item.to);
+      return;
+    }
+
+    // Case: Other sections - Simulation flow
+    setInputValue("");
+    setIsCollapsed(true);
+
+    // 2. Immediate jump to chat to show the interaction
+    navigate("/dashboard/chat");
+
+    // 3. Add user message
+    dispatch(addMessage({
+      id: Math.random().toString(),
+      sender: "user",
+      text: item.mobileLabel || "",
+      timestamp: new Date().toISOString()
+    }));
+
+    // 4. Start thinking effect
+    dispatch(setThinking(true));
+
+    // 5. Short delay for the first response (Greeting)
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    dispatch(addMessage({
+      id: Math.random().toString(),
+      sender: "agent",
+      text: item.greeting || "",
+      timestamp: new Date().toISOString()
+    }));
+
+    // 6. Keep thinking a bit more before showing content
+    await new Promise(resolve => setTimeout(resolve, 1200));
+
+    // 7. Final navigation to the actual section
+    navigate(item.to);
+    
+    // Ensure we scroll to the top to see the agent's message/greeting clearly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    dispatch(setThinking(false));
   };
 
   return (
@@ -80,9 +133,9 @@ export default function DashboardNavbar({ isCollapsed, setIsCollapsed }: Dashboa
           {NAV_ITEMS.filter(item => item.mobileLabel).map((item) => (
             <button
               key={item.to}
-              onClick={() => { navigate(item.to); setIsCollapsed(true); }}
+              onClick={() => handleChipClick(item)}
               className={`whitespace-nowrap px-4 py-2 font-bold text-[11px] rounded-full uppercase tracking-wider active:scale-95 transition-transform 
-              bg-surface-variant/60 text-on-surface-variant`}
+              ${item.to === "/dashboard/home" ? "bg-[#d1efdc] text-[#005226]" : "bg-surface-variant/60 text-on-surface-variant"}`}
             >
               {item.mobileLabel}
             </button>

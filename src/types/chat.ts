@@ -42,7 +42,7 @@ export type ClientPayload =
 // Server -> Client
 export interface ActionCandidate {
     // Definimos esto si sabemos qué tiene, por ahora genérico
-    [key: string]: any; 
+    [key: string]: unknown; 
 }
 
 export interface ResolvedAction {
@@ -50,7 +50,7 @@ export interface ResolvedAction {
     description?: string;
     question?: string;
     candidates?: ActionCandidate[];
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 export interface ServerInfoPayload {
@@ -60,7 +60,7 @@ export interface ServerInfoPayload {
 
 export interface ServerThinkingPayload {
   type: "THINKING";
-  payload?: any;
+  payload?: unknown;
 }
 
 export interface ServerActionsPayload {

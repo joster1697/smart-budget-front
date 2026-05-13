@@ -33,7 +33,7 @@ export default function ActionInlineButtons({ action, actionIndex }: ActionInlin
 
       {shouldShowCandidates ? (
         <div className="flex flex-col gap-2">
-          {action.candidates?.map((candidate, candidateIdx) => {
+          {action.candidates?.map((candidate: any, candidateIdx) => {
             const candidateName = candidate.name || candidate.title || candidate.description || `Opción ${candidateIdx + 1}`;
             return (
               <button

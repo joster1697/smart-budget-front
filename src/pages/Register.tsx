@@ -295,7 +295,7 @@ export default function Register() {
           setErrors({ general: "El Usuario ya existe" });
         }
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setErrors({
         general: error.message || "Error al conectar con el servidor",
