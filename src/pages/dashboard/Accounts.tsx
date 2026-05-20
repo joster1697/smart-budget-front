@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AccountHeader from "../../components/dashboard/accounts/AccountHeader";
 import AccountAIBanner from "../../components/dashboard/accounts/AccountAIBanner";
 import AccountCard from "../../components/dashboard/AccountCard";
@@ -19,8 +19,6 @@ import {
 export default function Accounts() {
   const dispatch = useAppDispatch();
   const { accounts } = useAppSelector((state) => state.accounts);
-
-  // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState("");
   const [type, setType] = useState<
@@ -28,7 +26,21 @@ export default function Accounts() {
   >("checking");
   const [balance, setBalance] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
+    null,
+  );
 
+  useEffect(() => {
+    if (accounts.length > 0 && !selectedAccountId) {
+      setSelectedAccountId(accounts[0].id);
+      const selectedAccount = accounts.find(
+        (account) => account.id === selectedAccountId,
+      );
+    }
+  }, [accounts, selectedAccountId]);
+  const selectedAccount = accounts.find(
+    (account) => account.id === selectedAccountId,
+  );
   const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -71,7 +83,7 @@ export default function Accounts() {
           const formattedVirtual = new Intl.NumberFormat("es-CR", {
             style: "currency",
             currency: "CRC",
-          }).format(account.available_balance ?? account.balance);
+          }).format(account.balance - (account.reserved_balance ?? 0));
           return (
             <AccountCard
               key={account.id}
@@ -80,15 +92,17 @@ export default function Accounts() {
               balance={formattedBalance}
               virtualBalance={formattedVirtual}
               isDark={account.type === "investment"}
+              isSelected={account.id === selectedAccountId}
+              onClick={() => setSelectedAccountId(account.id)}
             />
           );
         })}
       </div>
       <PrimaryCheckingAnalysis />
-      <AccountDetails />
+      <AccountDetails account={selectedAccount} />
       <LinkedCreditCards />
       <SmartTools />
-      <DangerZone />
+      <DangerZone account={selectedAccount} />
       {/* Modal para Crear Cuenta */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">

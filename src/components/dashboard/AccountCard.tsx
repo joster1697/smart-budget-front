@@ -6,6 +6,8 @@ interface AccountCardProps {
   balance: string;
   virtualBalance: string;
   isDark?: boolean;
+  isSelected?: boolean;
+  onClick?: () => void;
 }
 
 export default function AccountCard({
@@ -14,12 +16,20 @@ export default function AccountCard({
   balance,
   virtualBalance,
   isDark = false,
+  isSelected = false,
+  onClick,
 }: AccountCardProps) {
   const baseClasses =
-    "rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 hover:shadow-md";
+    "rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 hover:shadow-md cursor-pointer";
   const colorClasses = isDark
     ? "bg-on-primary shadow-lg"
     : "bg-surface-container-lowest shadow-sm border border-outline-variant/20";
+
+  const borderClasses = isSelected
+    ? "border-2 border-[#005226] scale-[1.02] shadow-md"
+    : isDark
+      ? "border border-transparent"
+      : "border border-outline-variant/20";
 
   const textTitleClasses = isDark ? "text-white/80" : "text-on-surface-variant";
   const textRealClasses = isDark ? "text-white" : "text-on-surface";
@@ -30,7 +40,10 @@ export default function AccountCard({
   const iconColor = isDark ? "text-primary" : "text-[#005226]";
 
   return (
-    <div className={`${baseClasses} ${colorClasses}`}>
+    <div
+      onClick={onClick}
+      className={`${baseClasses} ${colorClasses} ${borderClasses} cursor-pointer`}
+    >
       <div className="flex justify-between items-start">
         <p
           className="text-[11px] font-medium uppercase tracking-wider text-opacity-80 leading-none"
