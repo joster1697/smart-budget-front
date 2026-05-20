@@ -8,9 +8,19 @@ export interface Category {
   icon?: string;
 }
 
+export interface CategoryResponse {
+  message: string;
+  categories: Category[];
+}
+
+export interface SingleCategoryResponse {
+  message: string;
+  category: Category;
+}
+
 export const categoryService = {
-  getCategories: () => api.get<Category[]>("/categories"),
-  createCategory: (data: Partial<Category>) => api.post<Category>("/categories", data),
+  getCategories: () => api.get<CategoryResponse>("/categories"),
+  createCategory: (data: Partial<Category>) => api.post<SingleCategoryResponse>("/categories", data),
   updateCategory: (id: string, data: Partial<Category>) => api.put<Category>(`/categories/${id}`, data),
   deleteCategory: (id: string) => api.delete<void>(`/categories/${id}`),
 };

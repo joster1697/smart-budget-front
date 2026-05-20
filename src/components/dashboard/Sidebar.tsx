@@ -1,8 +1,18 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { IconLogout } from "@tabler/icons-react";
 import { NAV_ITEMS } from "../../constants/navigation";
+import { useAppDispatch } from "../../store/hooks";
+import { logout } from "../../store/slices/authSlice";
 
 export default function Sidebar() {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/login");
+  };
+
   return (
     <aside className="hidden lg:flex flex-col w-[280px] bg-[#0a1f12] h-screen sticky top-0 left-0 text-white shadow-xl z-50">
       {/* Logo Area */}
@@ -49,7 +59,10 @@ export default function Sidebar() {
             <p className="text-[10px] font-bold text-[#38e07b] uppercase mt-0.5">Plan Premium</p>
           </div>
         </div>
-        <button className="flex items-center gap-3 text-white/50 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider w-full">
+        <button 
+          onClick={handleLogout}
+          className="flex items-center gap-3 text-white/50 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider w-full"
+        >
           <IconLogout size={18} />
           Cerrar Sesión
         </button>
