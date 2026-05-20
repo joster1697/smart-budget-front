@@ -1,21 +1,16 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-export interface Account {
-  id: string;
-  name: string;
-  type: "checking" | "savings" | "credit" | "investment";
-  balance: number;
-  currency: string;
-}
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import accountService, { Account } from "../../services/accountService";
 
 interface AccountsState {
   accounts: Account[];
   loading: boolean;
+  error?: string | null;
 }
 
 const initialState: AccountsState = {
   accounts: [],
   loading: false,
+  error: null,
 };
 
 const accountsSlice = createSlice({
@@ -39,8 +34,62 @@ const accountsSlice = createSlice({
       state.loading = action.payload;
     },
   },
+
+  extraReducers: (builder) => {
+    builder
+      //Fetch Accounts
+      .addCase(fetchAccounts.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchAccounts.fulfilled, (state, action) => {
+        state.accounts = action.payload.accounts;
+        state.loading = false;
+      })
+      //Create Accounts
+      .addCase(fetchAccounts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Error while fetching accounts";
+      })
+      .addCase(createNewAccount.fulfilled, (state, action) => {
+        state.accounts.push(action.payload);
+        state.loading = false;
+      })
+      .addCase(createNewAccount.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Error while creating account";
+      });
+  },
 });
 
-export const { setAccounts, addAccount, updateAccount, removeAccount, setLoading } =
-  accountsSlice.actions;
+export const fetchAccounts = createAsyncThunk(
+  "accounts/fetchAccounts",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await accountService.getAccounts();
+      return response;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  },
+);
+
+export const createNewAccount = createAsyncThunk(
+  "accounts/createNewAccount",
+  async (data: Omit<Account, "id">, { rejectWithValue }) => {
+    try {
+      const response = await accountService.createAccount(data);
+      return (response as any).account as Account;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  },
+);
+
+export const {
+  setAccounts,
+  addAccount,
+  updateAccount,
+  removeAccount,
+  setLoading,
+} = accountsSlice.actions;
 export default accountsSlice.reducer;

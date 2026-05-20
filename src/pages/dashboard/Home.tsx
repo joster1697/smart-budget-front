@@ -34,27 +34,27 @@ export default function Home() {
           <AccountCard 
             title="Primary Checking" 
             icon={<IconBuildingBank size={18} />} 
-            balance="$124,500.00" 
-            virtualBalance="$127,488.00" 
+            balance="₡124,500.00" 
+            virtualBalance="₡127,488.00" 
           />
           <AccountCard 
             title="Virtual Savings" 
             icon={<IconPigMoney size={18} />} 
-            balance="$45,200.00" 
-            virtualBalance="$66,500.00" 
+            balance="₡45,200.00" 
+            virtualBalance="₡66,500.00" 
           />
           <AccountCard 
             title="Investment" 
             icon={<IconTrendingUp size={18} />} 
-            balance="$312,850.00" 
-            virtualBalance="$338,200.00" 
+            balance="₡312,850.00" 
+            virtualBalance="₡338,200.00" 
             isDark 
           />
           <AccountCard 
             title="Retirement Fund" 
             icon={<IconLeaf size={18} />} 
-            balance="$89,400.00" 
-            virtualBalance="$92,100.00" 
+            balance="₡89,400.00" 
+            virtualBalance="₡92,100.00" 
           />
         </div>
       </div>
@@ -71,13 +71,13 @@ export default function Home() {
               icon={<IconShoppingCart size={20} className="text-on-surface-variant" />}
               title="Supermercado El Sol"
               date="Hoy, 10:45 AM"
-              amount="$1,450.00"
+              amount="₡1,450.00"
             />
             <ActivityItem 
               icon={<IconCash size={20} className="text-[#005226]" />}
               title="Transferencia Recibida"
               date="Ayer"
-              amount="$12,000.00"
+              amount="₡12,000.00"
               isNegative={false}
               iconBgClass="bg-primary-container/40"
             />
@@ -85,19 +85,19 @@ export default function Home() {
               icon={<IconToolsKitchen2 size={20} className="text-on-surface-variant" />}
               title="Restaurante La Noche"
               date="Ayer"
-              amount="$2,890.00"
+              amount="₡2,890.00"
             />
             <ActivityItem 
               icon={<IconDeviceTv size={20} className="text-on-surface-variant" />}
               title="Suscripción Streaming"
               date="24 Oct"
-              amount="$199.00"
+              amount="₡199.00"
             />
             <ActivityItem 
               icon={<IconBulb size={20} className="text-on-surface-variant" />}
               title="Pago de Luz"
               date="22 Oct"
-              amount="$840.00"
+              amount="₡840.00"
             />
           </div>
           <div className="mt-6 text-center">
@@ -112,11 +112,11 @@ export default function Home() {
             <IconCalendarEvent size={22} className="text-[#005226]" />
           </div>
           <div className="space-y-3">
-            <PaymentCard day="15" month="OCT" title="Tarjeta de Crédito Oro" amount="$12,400.00" />
-            <PaymentCard day="18" month="OCT" title="Seguro de Auto" amount="$3,200.00" />
-            <PaymentCard day="22" month="OCT" title="Mantenimiento Depto" amount="$1,500.00" />
-            <PaymentCard day="01" month="NOV" title="Hipoteca" amount="$18,000.00" />
-            <PaymentCard day="05" month="NOV" title="Colegiatura" amount="$8,500.00" />
+            <PaymentCard day="15" month="OCT" title="Tarjeta de Crédito Oro" amount="₡12,400.00" />
+            <PaymentCard day="18" month="OCT" title="Seguro de Auto" amount="₡3,200.00" />
+            <PaymentCard day="22" month="OCT" title="Mantenimiento Depto" amount="₡1,500.00" />
+            <PaymentCard day="01" month="NOV" title="Hipoteca" amount="₡18,000.00" />
+            <PaymentCard day="05" month="NOV" title="Colegiatura" amount="₡8,500.00" />
           </div>
         </div>
       </div>

@@ -52,14 +52,14 @@ export default function AccountDetails() {
         <div className="flex justify-between items-center mt-6">
           <span className="text-[#424943] text-[14px]">Real Balance</span>
           <span className="text-[#1B252D] font-medium text-[15px] tabular-nums">
-            $42,500.00
+            ₡42,500.00
           </span>
         </div>
 
         <div className="flex justify-between items-center mt-3">
           <span className="text-[#ba1a1a] text-[14px]">Pending Amounts</span>
           <span className="text-[#ba1a1a] font-medium text-[15px] tabular-nums">
-            -$150.00
+            -₡150.00
           </span>
         </div>
 
@@ -70,7 +70,7 @@ export default function AccountDetails() {
             Virtual Balance
           </span>
           <span className="text-[#2ae574] font-bold text-[16px] tabular-nums tracking-wide">
-            $42,350.00
+            ₡42,350.00
           </span>
         </div>
 
@@ -80,7 +80,7 @@ export default function AccountDetails() {
         <div className="flex items-center gap-3 mt-2 max-w-sm">
           <input
             type="text"
-            placeholder="$0.00"
+            placeholder="₡0.00"
             className="flex-1 border border-outline-variant/40 rounded-lg p-2.5 bg-white text-[#1B252D] focus:outline-none focus:border-[#006b3a] transition-colors"
           />
           <button className="bg-[#e4e6e5]/60 transition-colors px-6 py-2.5 rounded-lg font-bold text-[#1B252D] text-[13px] cursor-pointer border-2 border-primary-fixed hover:bg-primary-fixed">
