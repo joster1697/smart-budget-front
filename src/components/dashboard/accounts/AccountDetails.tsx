@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { BankIcon, EditIcon } from "../../ui/Icons";
 import { IconListDetails } from "@tabler/icons-react";
-import { useAppDispatch } from "../../../store/hooks";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { updateCreatedAccount } from "../../../store/slices/accountsSlice";
 
 export default function AccountDetails({ account }: { account: any }) {
@@ -9,6 +9,7 @@ export default function AccountDetails({ account }: { account: any }) {
 
   const dispatch = useAppDispatch();
   const [adjustment, setAdjustment] = useState("");
+  const { accounts } = useAppSelector((state) => state.accounts);
 
   const handleApplyAdjustment = async () => {
     if (!account) return;
@@ -25,6 +26,20 @@ export default function AccountDetails({ account }: { account: any }) {
       setAdjustment("");
     } catch (error) {
       console.error("Error: ", error);
+    }
+  };
+
+  const handleSaveName = async () => {
+    if (!account) return;
+    try {
+      await dispatch(
+        updateCreatedAccount({
+          ...account,
+          name: accountName,
+        }),
+      ).unwrap();
+    } catch (error) {
+      console.error("Error while updating account: ", error);
     }
   };
 
@@ -48,7 +63,16 @@ export default function AccountDetails({ account }: { account: any }) {
 
   console.log("DEBUG: selected account is", account);
 
-  const pendingAmount = Number(account.reserved_balance ?? 0);
+  const linkedCreditCards = accounts.filter(
+    (acc) => acc.type === "credit" && acc.account_linked === account.id
+  );
+
+  const creditCardsPending = linkedCreditCards.reduce(
+    (sum, card) => sum + Number(card.balance),
+    0
+  );
+
+  const pendingAmount = Number(account.reserved_balance ?? 0) + creditCardsPending;
 
   const virtualBalance = Number(account.balance - pendingAmount);
 
@@ -79,7 +103,10 @@ export default function AccountDetails({ account }: { account: any }) {
             onChange={(e) => setAccountName(e.target.value)}
             className="flex-1 border border-outline-variant/40 rounded-lg p-3 bg-[#fbfdfc] text-[#1B252D] font-medium focus:outline-none focus:border-primary-fixed hover:border-primary-fixed cursor-pointer transition-all duration-300 hover:shadow-md"
           />
-          <button className="bg-[#e4e6e5]/60 transition-colors px-6 py-3 rounded-lg font-bold text-[#1B252D] text-[14px]  cursor-pointer border-2 border-primary-fixed hover:bg-primary-fixed">
+          <button
+            onClick={handleSaveName}
+            className="bg-[#e4e6e5]/60 transition-colors px-6 py-3 rounded-lg font-bold text-[#1B252D] text-[14px]  cursor-pointer border-2 border-primary-fixed hover:bg-primary-fixed"
+          >
             Save
           </button>
         </div>
@@ -106,9 +133,18 @@ export default function AccountDetails({ account }: { account: any }) {
         <div className="flex justify-between items-center mt-3">
           <span className="text-[#ba1a1a] text-[14px]">Pending Amounts</span>
           <span className="text-[#ba1a1a] font-medium text-[15px] tabular-nums">
-            -{formatCurrency(pendingAmount)}
+            -{formatCurrency(Number(account.reserved_balance ?? 0))}
           </span>
         </div>
+
+        {creditCardsPending > 0 && (
+          <div className="flex justify-between items-center mt-3">
+            <span className="text-[#ba1a1a] text-[14px]">Tarjetas Ligadas</span>
+            <span className="text-[#ba1a1a] font-medium text-[15px] tabular-nums">
+              -{formatCurrency(creditCardsPending)}
+            </span>
+          </div>
+        )}
 
         <div className="h-px w-full bg-[#c4c7c5]/50 my-5"></div>
 

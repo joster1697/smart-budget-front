@@ -1,3 +1,4 @@
+import { string } from "zod";
 import api from "./api";
 
 export interface Account {
@@ -27,11 +28,16 @@ const accountService = {
   updateAccount: (id: string, data: Partial<Omit<Account, "id">>) =>
     api.put<Account>(`/accounts/${id}`, data),
 
+  //Delete an existing account
+  deleteAccount: (id: string) =>
+    api.delete<{ message: string }>(`/accounts/${id}`),
+
+  //Link an existing account
   linkAccount: (accountId: string, linkedAccountId: string) =>
     api.post<Account>(`/accounts/${accountId}/link`, {
-      account_linked: linkedAccountId,
+      targetAccountId: linkedAccountId,
     }),
-
+  //Unlink an existing account
   unlinkAccount: (id: string) =>
     api.post<Account>(`/accounts/${id}/unlink`, {}),
 };

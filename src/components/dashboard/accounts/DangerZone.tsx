@@ -1,9 +1,26 @@
 import { LockIcon } from "../../ui/Icons";
+import { useState } from "react";
+import { useAppDispatch } from "../../../store/hooks";
+import { deleteCreatedAccount } from "../../../store/slices/accountsSlice";
+
 interface DangerZoneProps {
   account?: any;
 }
 
 export default function DangerZone({ account }: DangerZoneProps) {
+  const [isConfirmed, setIsConfirmed] = useState(false);
+  const dispatch = useAppDispatch();
+
+  const handleDelete = async () => {
+    if (!account || !isConfirmed) return;
+    try {
+      await dispatch(deleteCreatedAccount(account.id)).unwrap();
+      setIsConfirmed(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   if (!account) return null;
   return (
     <div className="flex flex-col gap-5 mt-8">
@@ -17,7 +34,10 @@ export default function DangerZone({ account }: DangerZoneProps) {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-[#fdfaf9] border border-[#f5dbda] rounded-xl p-5 gap-6">
         <div className="flex-1 pr-4">
           <p className="text-[15px] font-bold text-[#1B252D]">
-            Archive or Delete Account
+            Archive or Delete Account:{" "}
+            <span className="text-[15px] font-bold underline text-[#000000]">
+              {account.name}
+            </span>
           </p>
           <p className="text-[14px] text-[#424943] mt-1.5 leading-relaxed">
             This action is permanent and will remove all transaction history and
@@ -25,10 +45,12 @@ export default function DangerZone({ account }: DangerZoneProps) {
           </p>
         </div>
 
-        <div className="flex items-center gap-4 shrink-0">
+        <div className="flex items-stretch justify-center w-full sm:w-auto gap-4 shrink-0">
           <label className="flex items-center gap-2 bg-[#e4e6e5]/40 border border-[#c4c7c5] px-3 py-2.5 rounded-lg cursor-pointer hover:bg-[#e4e6e5]/60 transition-colors">
             <input
               type="checkbox"
+              checked={isConfirmed}
+              onChange={(e) => setIsConfirmed(e.target.checked)}
               className="w-4 h-4 rounded-sm border-outline-variant bg-transparent accent-primary"
             />
             <span className="text-[12px] font-medium leading-tight text-[#1B252D]">
@@ -37,10 +59,15 @@ export default function DangerZone({ account }: DangerZoneProps) {
               Action
             </span>
           </label>
-          <button className="px-6 py-3.5 bg-[#db8b88] text-white rounded-lg text-[14px] font-bold hover:brightness-95 transition-colors leading-tight">
+          <button
+            onClick={handleDelete}
+            disabled={!isConfirmed}
+            className="px-6 py-3.5 bg-[#db8b88] text-white rounded-lg text-[14px] font-bold cursor-pointer hover:bg-[#bd1c17] brightness-95 transition-colors leading-tight"
+          >
             Delete
             <br />
             Account
+            <br />
           </button>
         </div>
       </div>

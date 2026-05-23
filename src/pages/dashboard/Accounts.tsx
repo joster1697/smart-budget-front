@@ -100,7 +100,7 @@ export default function Accounts() {
       </div>
       <PrimaryCheckingAnalysis />
       <AccountDetails account={selectedAccount} />
-      <LinkedCreditCards />
+      <LinkedCreditCards account={selectedAccount} />
       <SmartTools />
       <DangerZone account={selectedAccount} />
       {/* Modal para Crear Cuenta */}

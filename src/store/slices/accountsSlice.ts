@@ -71,6 +71,41 @@ const accountsSlice = createSlice({
       .addCase(updateCreatedAccount.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Error while updating account";
+      })
+      //Delete Accounts
+      .addCase(deleteCreatedAccount.fulfilled, (state, action) => {
+        state.loading = false;
+        state.accounts = state.accounts.filter(
+          (acc) => acc.id !== action.payload,
+        );
+      })
+      .addCase(deleteCreatedAccount.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Error while deleting account";
+      })
+      //Link Account
+      .addCase(linkAccountThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.accounts.findIndex((a) => a.id === action.payload.id);
+        if (index !== -1) {
+          state.accounts[index] = action.payload;
+        }
+      })
+      .addCase(linkAccountThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Error while linking account";
+      })
+      //Unlink Account
+      .addCase(unlinkAccountThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.accounts.findIndex((a) => a.id === action.payload.id);
+        if (index !== -1) {
+          state.accounts[index] = action.payload;
+        }
+      })
+      .addCase(unlinkAccountThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Error while unlinking account";
       });
   },
 });
@@ -114,6 +149,46 @@ export const updateCreatedAccount = createAsyncThunk(
     }
   },
 );
+
+export const deleteCreatedAccount = createAsyncThunk(
+  "accounts/deleteAccount",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await accountService.deleteAccount(id);
+      return id;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  },
+);
+
+export const linkAccountThunk = createAsyncThunk(
+  "accounts/linkAccount",
+  async (
+    { accountId, linkedAccountId }: { accountId: string; linkedAccountId: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await accountService.linkAccount(accountId, linkedAccountId);
+      return (response as any).account as Account;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  },
+);
+
+export const unlinkAccountThunk = createAsyncThunk(
+  "accounts/unlinkAccount",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await accountService.unlinkAccount(id);
+      return (response as any).account as Account;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  },
+);
+
 
 export const {
   setAccounts,
