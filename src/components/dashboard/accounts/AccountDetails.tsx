@@ -1,9 +1,32 @@
 import { useEffect, useState } from "react";
 import { BankIcon, EditIcon } from "../../ui/Icons";
 import { IconListDetails } from "@tabler/icons-react";
+import { useAppDispatch } from "../../../store/hooks";
+import { updateCreatedAccount } from "../../../store/slices/accountsSlice";
 
 export default function AccountDetails({ account }: { account: any }) {
   const [accountName, setAccountName] = useState("Primary Checking");
+
+  const dispatch = useAppDispatch();
+  const [adjustment, setAdjustment] = useState("");
+
+  const handleApplyAdjustment = async () => {
+    if (!account) return;
+    try {
+      const adjustmentValue = Number(adjustment);
+      if (isNaN(adjustmentValue)) return;
+      const newBalance = adjustmentValue;
+      await dispatch(
+        updateCreatedAccount({
+          ...account,
+          balance: newBalance,
+        }),
+      ).unwrap();
+      setAdjustment("");
+    } catch (error) {
+      console.error("Error: ", error);
+    }
+  };
 
   useEffect(() => {
     if (!account) return;
@@ -103,11 +126,16 @@ export default function AccountDetails({ account }: { account: any }) {
         </span>
         <div className="flex items-center gap-3 mt-2 max-w-sm">
           <input
-            type="text"
+            type="number"
+            value={adjustment}
+            onChange={(e) => setAdjustment(e.target.value)}
             placeholder={formatCurrency(0)}
             className="flex-1 border border-outline-variant/40 rounded-lg p-2.5 bg-white text-[#1B252D] focus:outline-none focus:border-[#006b3a] transition-colors"
           />
-          <button className="bg-[#e4e6e5]/60 transition-colors px-6 py-2.5 rounded-lg font-bold text-[#1B252D] text-[13px] cursor-pointer border-2 border-primary-fixed hover:bg-primary-fixed">
+          <button
+            onClick={handleApplyAdjustment}
+            className="bg-[#e4e6e5]/60 transition-colors px-6 py-2.5 rounded-lg font-bold text-[#1B252D] text-[13px] cursor-pointer border-2 border-primary-fixed hover:bg-primary-fixed"
+          >
             Apply
           </button>
         </div>

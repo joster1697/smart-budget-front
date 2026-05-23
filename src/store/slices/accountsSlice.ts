@@ -57,6 +57,20 @@ const accountsSlice = createSlice({
       .addCase(createNewAccount.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Error while creating account";
+      })
+      //Update Accounts
+      .addCase(updateCreatedAccount.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.accounts.findIndex(
+          (acc) => acc.id === action.payload.id,
+        );
+        if (index !== -1) {
+          state.accounts[index] = action.payload;
+        }
+      })
+      .addCase(updateCreatedAccount.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Error while updating account";
       });
   },
 });
@@ -78,6 +92,22 @@ export const createNewAccount = createAsyncThunk(
   async (data: Omit<Account, "id">, { rejectWithValue }) => {
     try {
       const response = await accountService.createAccount(data);
+      return (response as any).account as Account;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  },
+);
+
+export const updateCreatedAccount = createAsyncThunk(
+  "accounts/updateAccount",
+  async (account: Account, { rejectWithValue }) => {
+    try {
+      const { id, ...updateData } = account;
+      if (updateData.account_linked === null) {
+        delete updateData.account_linked;
+      }
+      const response = await accountService.updateAccount(id, updateData);
       return (response as any).account as Account;
     } catch (error) {
       return rejectWithValue(error);
