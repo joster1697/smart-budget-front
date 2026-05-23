@@ -40,8 +40,17 @@ async function refreshAuthToken(): Promise<string | null> {
     .then(async (res) => {
       if (!res.ok) throw new Error("Refresh failed");
       const data = await res.json();
-      const newAccessToken = data.accessToken;
+      const newAccessToken = data.tokens?.accessToken;
+      const newRefreshToken = data.tokens?.refreshToken;
+
+      if (!newAccessToken) {
+        throw new Error("No access token returned");
+      }
+
       localStorage.setItem("token", newAccessToken);
+      if (newRefreshToken) {
+        localStorage.setItem("refreshToken", newRefreshToken);
+      }
       return newAccessToken;
     })
     .catch(() => {

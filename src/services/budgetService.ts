@@ -13,6 +13,7 @@ export interface CreateBudgetInput {
 
 export interface UpdateBudgetInput {
   planned_income?: number;
+  status?: string;
   categories?: BudgetCategoryInput[];
 }
 
@@ -20,6 +21,7 @@ export interface BudgetCategoryStatus {
   category_id?: string;
   category_name: string;
   allocated_amount: number;
+  original_allocated_amount?: number;
   spent_amount: number;
   remaining_amount: number;
   usage_percentage: number;
@@ -29,6 +31,7 @@ export interface BudgetCategoryStatus {
 export interface BudgetStatus {
   id?: string;
   period: string;
+  status?: string;
   planned_income: number;
   total_allocated: number;
   total_spent: number;
@@ -45,4 +48,5 @@ export const budgetService = {
   getBudget: (period: string) => api.get<BudgetResponse>(`/budgets/${period}`),
   createBudget: (data: CreateBudgetInput) => api.post<BudgetResponse>('/budgets', data),
   updateBudget: (id: string, data: UpdateBudgetInput) => api.put<BudgetResponse>(`/budgets/${id}`, data),
+  activateBudget: (id: string) => api.put<BudgetResponse>(`/budgets/${id}`, { status: 'ACTIVE' }),
 };

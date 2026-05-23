@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   IconChevronLeft,
   IconChevronRight,
-  IconWallet,
   IconPlus,
   IconChartPie,
   IconToolsKitchen2,
@@ -15,7 +14,10 @@ import {
   IconX,
   IconLock,
   IconLockOpen,
-  IconPencil
+  IconPencil,
+  IconArrowUp,
+  IconArrowDown,
+  IconDeviceFloppy
 } from "@tabler/icons-react";
 import AIChatBubble from "../../components/dashboard/AIChatBubble";
 import { budgetService, BudgetStatus, BudgetCategoryInput } from "../../services/budgetService";
@@ -56,6 +58,13 @@ export default function Budget() {
 
   const monthYearStr = currentDate.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
   const periodStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+
+  const today = new Date();
+  const isCurrentMonth = currentDate.getFullYear() === today.getFullYear() && currentDate.getMonth() === today.getMonth();
+  const isPastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1) <= new Date(today.getFullYear(), today.getMonth(), 1);
+
+  const rawMonthName = currentDate.toLocaleDateString("es-ES", { month: "long" }).split(" ")[0];
+  const capitalizedMonth = rawMonthName.charAt(0).toUpperCase() + rawMonthName.slice(1);
 
   const fetchBudget = async () => {
     setLoading(true);
@@ -142,6 +151,29 @@ export default function Budget() {
     }
   };
 
+  const handleActivateBudget = async () => {
+    if (!budget?.id) return;
+    try {
+      setLoading(true);
+      if (hasUnsavedChanges) {
+        // Guardamos los cambios antes de activar
+        await budgetService.updateBudget(budget.id, {
+          planned_income: plannedIncome,
+          categories: budgetCategories
+        });
+      }
+      await budgetService.activateBudget(budget.id);
+      setHasUnsavedChanges(false);
+      setIsEditing(false);
+      await fetchBudget();
+    } catch (err) {
+      const error = err as Error;
+      alert(error.message || "Error al activar el presupuesto");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCreateCategory = async () => {
     if (!newCategoryName) return;
     try {
@@ -162,20 +194,17 @@ export default function Budget() {
   const totalAllocatedInForm = budgetCategories.reduce((sum, cat) => sum + (cat.allocated_amount || 0), 0);
   const remainingToAllocate = plannedIncome - totalAllocatedInForm;
 
-  const now = new Date();
-  const isEditable = !!budget && (
-    currentDate.getFullYear() > now.getFullYear() ||
-    (currentDate.getFullYear() === now.getFullYear() && currentDate.getMonth() >= now.getMonth())
-  );
+  const isDraft = !budget || budget.status === 'DRAFT';
+  const isActive = budget?.status === 'ACTIVE';
 
-  const canEdit = isEditable && isEditing;
+  const canEdit = isDraft || (isActive && isEditing);
 
   const handleToggleEditing = () => {
     if (isEditing) {
       if (hasUnsavedChanges) {
         const confirmDiscard = window.confirm("Tienes cambios sin guardar en tu presupuesto. ¿Deseas descartarlos y bloquear la edición?");
         if (!confirmDiscard) return;
-        
+
         // Reset local form values to original budget values
         if (budget) {
           setPlannedIncome(budget.planned_income);
@@ -206,6 +235,7 @@ export default function Budget() {
       id: id,
       name: baseCat?.name || budgetCat?.category_name || "Desconocida",
       allocated_amount: localCat ? localCat.allocated_amount : (budgetCat?.allocated_amount || 0),
+      original_allocated_amount: budgetCat?.original_allocated_amount ?? 0,
       spent_amount: budgetCat?.spent_amount || 0,
       usage_percentage: budgetCat?.usage_percentage || 0,
       is_exceeded: budgetCat?.is_exceeded || false
@@ -224,6 +254,29 @@ export default function Budget() {
     });
   };
 
+  const getChatMessage = () => {
+    if (!budget) {
+      return `Hola, no he encontrado un presupuesto configurado para ${capitalizedMonth}. ¿Te gustaría crear uno nuevo para empezar?`;
+    }
+
+    if (budget.status === 'DRAFT') {
+      if (remainingToAllocate > 0) {
+        return `Hola, estás editando el borrador de ${capitalizedMonth}. Aún tienes ${formatCurrency(remainingToAllocate)} disponibles para asignar a tus categorías.`;
+      } else if (remainingToAllocate < 0) {
+        return `Hola, estás editando el borrador de ${capitalizedMonth}. Has sobreasignado ${formatCurrency(Math.abs(remainingToAllocate))}. Por favor, ajusta los límites.`;
+      }
+      return `Hola, el borrador de tu presupuesto de ${capitalizedMonth} está completamente asignado. ¡Ya puedes activarlo para este mes!`;
+    }
+
+    // Active budget
+    if (remainingToAllocate > 0) {
+      return `Hola, aquí tienes el resumen de tu presupuesto activo de ${capitalizedMonth}. Aún tienes ${formatCurrency(remainingToAllocate)} disponibles para asignar.`;
+    } else if (remainingToAllocate < 0) {
+      return `Hola, tu presupuesto de ${capitalizedMonth} está activo, pero tienes una sobreasignación de ${formatCurrency(Math.abs(remainingToAllocate))}.`;
+    }
+    return `Hola, aquí tienes el resumen de tu presupuesto activo de ${capitalizedMonth}. Todo tu capital disponible está asignado a tus categorías de forma balanceada.`;
+  };
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 20 }}
@@ -233,25 +286,39 @@ export default function Budget() {
     >
       <AIChatBubble
         layoutId="agent-greeting"
-        message={`Hola, aquí tienes el resumen de tu presupuesto. Tienes ${formatCurrency(remainingToAllocate)} disponibles para asignar. ¿En qué más te puedo ayudar?`}
+        message={getChatMessage()}
       />
 
-      {/* Header and Month Selector */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-[28px] font-black tracking-tight text-on-surface font-manrope">Presupuesto</h2>
-          <p className="text-outline text-sm">Gestión y proyección financiera.</p>
-        </div>
-        <div className="flex items-center gap-4 bg-surface-container-lowest px-4 py-2 rounded-full border border-outline-variant/30 shadow-sm">
+      <div className="flex flex-row sm:justify-between gap-4 mt-2 mb-1 flex-wrap">
+        {/* Selector de Mes (Pill Blanca) */}
+        <div className="flex items-center gap-2 bg-surface-container-lowest px-4 py-1.5 rounded-full border border-outline-variant/30 shadow-sm">
           <button onClick={prevMonth} className="p-1 hover:bg-surface-container rounded-full transition-colors text-on-surface">
-            <IconChevronLeft size={20} />
+            <IconChevronLeft size={16} />
           </button>
-          <span className="font-bold text-[#005226] min-w-[120px] text-center capitalize">
+          <span className="font-bold text-[#005226] min-w-[120px] text-center capitalize text-sm">
             {monthYearStr}
           </span>
           <button onClick={nextMonth} className="p-1 hover:bg-surface-container rounded-full transition-colors text-on-surface">
-            <IconChevronRight size={20} />
+            <IconChevronRight size={16} />
           </button>
+        </div>
+
+        {/* Badges de Estado */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {budget && (
+            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isDraft ? 'bg-secondary-container text-on-secondary-container' : 'bg-[#008f43]/15 text-[#008f43]'
+              }`}>
+              {isDraft ? 'Borrador' : 'Activo'}
+            </span>
+          )}
+          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${isCurrentMonth
+            ? 'bg-[#005226]/10 text-[#005226] border-[#005226]/30'
+            : isPastMonth
+              ? 'bg-surface-container text-outline border-outline-variant/30'
+              : 'bg-blue-500/10 text-blue-700 border-blue-500/20'
+            }`}>
+            {isCurrentMonth ? 'Mes Actual' : isPastMonth ? 'Histórico' : 'Planificación'}
+          </span>
         </div>
       </div>
 
@@ -262,70 +329,69 @@ export default function Budget() {
       ) : (
         <>
           {/* Summary Card */}
-          <div className="bg-surface-container-lowest rounded-[28px] p-6 shadow-sm border border-outline-variant/20 flex flex-col lg:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4 lg:w-1/3">
-              <div className="bg-primary-container text-[#005226] p-3 rounded-xl">
-                <IconWallet size={32} />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg text-on-surface">Ingresos Proyectados</h3>
-              </div>
+
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-on-surface font-manrope">Ingresos Proyectados</h3>
             </div>
-            <div className="flex flex-1 justify-between w-full lg:w-2/3">
-              <div className="flex flex-col relative group">
-                <span className="text-outline text-sm font-medium flex items-center gap-1">
-                  Total Esperado
-                  {isEditing && (
-                    <button
-                      onClick={() => setIsModalOpen(true)}
-                      className="p-1 hover:bg-primary-container text-[#005226] rounded-full transition-all duration-200 cursor-pointer"
-                      title="Editar ingresos proyectados"
-                    >
-                      <IconPencil size={14} />
-                    </button>
-                  )}
-                </span>
-                <span className="text-2xl font-black text-on-surface">{formatCurrency(plannedIncome)}</span>
-              </div>
-              <div className="w-[1px] bg-outline-variant/30 hidden md:block"></div>
-              <div className="flex flex-col">
-                <span className="text-outline text-sm font-medium">Presupuestado</span>
-                <span className="text-2xl font-black text-on-surface">{formatCurrency(totalAllocatedInForm)}</span>
-              </div>
-              <div className="w-[1px] bg-outline-variant/30 hidden md:block"></div>
-              <div className="flex flex-col">
-                <span className="text-outline text-sm font-medium">Disponible</span>
-                <span className={`text-2xl font-black ${remainingToAllocate < 0 ? 'text-error' : 'text-[#008f43]'}`}>
-                  {formatCurrency(remainingToAllocate)}
-                </span>
+
+            <div className="bg-surface-container-lowest rounded-[28px] p-6 shadow-sm border border-outline-variant/20 flex flex-col items-start justify-between gap-6">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-6 w-full">
+                <div className="flex sm:items-center flex-col relative group">
+                  <span className="text-outline text-sm font-medium flex items-center gap-1">
+                    Total Esperado
+                    {isEditing && (
+                      <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="p-1 hover:bg-primary-container text-[#005226] rounded-full transition-all duration-200 cursor-pointer"
+                        title="Editar ingresos proyectados"
+                      >
+                        <IconPencil size={14} />
+                      </button>
+                    )}
+                  </span>
+                  <span className="text-xl sm:text-2xl font-black text-on-surface whitespace-nowrap">{formatCurrency(plannedIncome)}</span>
+                </div>
+                <div className="flex sm:items-center flex-col">
+                  <span className="text-outline text-sm font-medium">Presupuestado</span>
+                  <span className="text-xl sm:text-2xl font-black text-on-surface whitespace-nowrap">{formatCurrency(totalAllocatedInForm)}</span>
+                </div>
+                <div className="flex sm:items-center flex-col">
+                  <span className="text-outline text-sm font-medium">Disponible</span>
+                  <span className={`text-xl sm:text-2xl font-black whitespace-nowrap ${remainingToAllocate < 0 ? 'text-error' : 'text-[#008f43]'}`}>
+                    {formatCurrency(remainingToAllocate)}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
+
           {/* Categories Section */}
           <div>
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col justify-between sm:flex-row sm:items-center gap-2 mb-4">
               <h3 className="text-xl font-bold text-on-surface font-manrope">Categorías de Presupuesto</h3>
               <div className="flex items-center gap-3">
-                {isEditable && (
+                {isActive && (
                   <button
                     onClick={handleToggleEditing}
-                    className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all duration-300 shadow-sm cursor-pointer ${
-                      isEditing
-                        ? "bg-[#005226] text-white hover:bg-[#003d1c]"
-                        : "bg-surface-container text-outline hover:text-on-surface border border-outline-variant/30 hover:border-outline-variant"
-                    }`}
+                    className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all duration-300 shadow-sm cursor-pointer ${isEditing
+                      ? "bg-[#005226] text-white hover:bg-[#003d1c]"
+                      : "bg-surface-container text-outline hover:text-on-surface border border-outline-variant/30 hover:border-outline-variant"
+                      }`}
                   >
                     {isEditing ? <IconLockOpen size={14} /> : <IconLock size={14} />}
-                    <span>{isEditing ? "Modo Edición: Activo" : "Bloqueado"}</span>
+                    <span>{isEditing ? "Modo Ajuste" : "Ajustar Límites"}</span>
                   </button>
                 )}
-                <button
-                  onClick={() => setIsCategoryModalOpen(true)}
-                  className="flex items-center gap-1 text-sm font-bold text-[#005226] hover:bg-primary-container px-3 py-1.5 rounded-full transition-colors"
-                >
-                  <IconPlus size={16} /> Añadir Categoría
-                </button>
+                {canEdit && (
+                  <button
+                    onClick={() => setIsCategoryModalOpen(true)}
+                    className="flex items-center gap-1 text-sm font-bold text-[#005226] hover:bg-primary-container px-3 py-1.5 rounded-full transition-colors"
+                  >
+                    <IconPlus size={16} /> Añadir Categoría
+                  </button>
+                )}
               </div>
             </div>
 
@@ -341,30 +407,45 @@ export default function Budget() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                 {displayCategories.map((cat, idx) => (
-                  <div key={idx} className={`bg-surface-container-lowest rounded-[24px] p-5 shadow-sm border transition-all duration-300 ${canEdit ? 'border-[#005226]/30 bg-surface-container-low/20 shadow-md scale-[1.01]' : 'border-outline-variant/20'}`}>
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-primary-container/30 p-2 rounded-xl">
-                          {getCategoryIcon(cat.name)}
+                  <div key={idx} className={`flex flex-col justify-between bg-surface-container-lowest rounded-[24px] p-5 shadow-sm border transition-all duration-300 ${canEdit ? 'border-[#005226]/30 bg-surface-container-low/20 shadow-md scale-[1.01]' : 'border-outline-variant/20'}`}>
+                    <div className="flex flex-col mb-4">
+                      <div className="flex flex-wrap justify-between items-center gap-x-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="bg-primary-container/30 p-2 rounded-xl shrink-0">
+                            {getCategoryIcon(cat.name)}
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="font-bold text-lg text-on-surface truncate" title={cat.name}>{cat.name}</h4>
+                          </div>
                         </div>
-                        <h4 className="font-bold text-lg text-on-surface">{cat.name}</h4>
+
+                        {canEdit ? (
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-xs text-outline font-medium">₡</span>
+                            <input
+                              type="number"
+                              value={cat.allocated_amount || ""}
+                              onChange={(e) => handleCategoryAllocationChange(cat.id, Number(e.target.value))}
+                              className="w-24 bg-surface-container border border-outline-variant/30 rounded-lg px-2 py-1 text-right text-on-surface font-bold focus:outline-none focus:ring-1 focus:ring-[#005226]"
+                              placeholder="0"
+                            />
+                          </div>
+                        ) : (
+                          <div className="text-left sm:text-right shrink-0 whitespace-nowrap">
+                            <span className="text-xs text-outline font-medium">Límite:</span>
+                            <span className="ml-2 font-bold text-on-surface">{formatCurrency(cat.allocated_amount)}</span>
+                          </div>
+                        )}
                       </div>
 
-                      {canEdit ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-outline font-medium">₡</span>
-                          <input
-                            type="number"
-                            value={cat.allocated_amount || ""}
-                            onChange={(e) => handleCategoryAllocationChange(cat.id, Number(e.target.value))}
-                            className="w-24 bg-surface-container border border-outline-variant/30 rounded-lg px-2 py-1 text-right text-on-surface font-bold focus:outline-none focus:ring-1 focus:ring-[#005226]"
-                            placeholder="0"
-                          />
-                        </div>
-                      ) : (
-                        <div className="text-right">
-                          <span className="text-xs text-outline font-medium">Límite:</span>
-                          <span className="ml-2 font-bold text-on-surface">{formatCurrency(cat.allocated_amount)}</span>
+                      {isActive && cat.original_allocated_amount !== cat.allocated_amount && (
+                        <div className={`w-fit text-[10px] font-bold px-2 py-0.5 rounded-full flex items-start gap-1 mt-1 ${cat.allocated_amount > cat.original_allocated_amount ? 'bg-error/10 text-error' : 'bg-[#008f43]/10 text-[#008f43]'}`}>
+                          <span className="shrink-0 mt-[2px]">
+                            {cat.allocated_amount > cat.original_allocated_amount ? <IconArrowUp size={10} /> : <IconArrowDown size={10} />}
+                          </span>
+                          <span className="leading-tight">
+                            {formatCurrency(Math.abs(cat.allocated_amount - cat.original_allocated_amount))} ajustado (Orig: {formatCurrency(cat.original_allocated_amount)})
+                          </span>
                         </div>
                       )}
                     </div>
@@ -375,23 +456,23 @@ export default function Budget() {
                           <span>$0</span>
                           <span>{formatCurrency(plannedIncome)}</span>
                         </div>
-                        <input 
-                          type="range" 
-                          min="0" 
-                          max={plannedIncome > 0 ? plannedIncome : 1000} 
+                        <input
+                          type="range"
+                          min="0"
+                          max={plannedIncome > 0 ? plannedIncome : 1000}
                           step="1000"
-                          value={cat.allocated_amount} 
+                          value={cat.allocated_amount}
                           onChange={(e) => handleCategoryAllocationChange(cat.id, Number(e.target.value))}
                           className="budget-slider cursor-pointer"
                         />
                       </div>
                     ) : (
-                      <>
-                        <div className="flex justify-between text-sm mb-2">
-                          <span className="text-outline font-medium">
+                      <div>
+                        <div className="flex flex-wrap gap-2 text-xs sm:text-sm mb-2">
+                          <span className="text-outline font-medium truncate">
                             {formatCurrency(cat.spent_amount)} de {formatCurrency(cat.allocated_amount)} gastado
                           </span>
-                          <span className="font-bold text-on-surface">{cat.usage_percentage}%</span>
+                          <span className="font-bold text-on-surface">{Math.round(cat.usage_percentage)}%</span>
                         </div>
                         <div className="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
                           <div
@@ -402,7 +483,7 @@ export default function Budget() {
                         {cat.is_exceeded && (
                           <p className="text-error text-xs mt-2 font-medium">Has excedido el presupuesto para esta categoría.</p>
                         )}
-                      </>
+                      </div>
                     )}
                   </div>
                 ))}
@@ -500,30 +581,57 @@ export default function Budget() {
         )}
       </AnimatePresence>
 
-      {/* Global Save Button for Unsaved Changes */}
+      {/* Global Save Button for Unsaved Changes / Draft Mode */}
       <AnimatePresence>
-        {hasUnsavedChanges && (
+        {(hasUnsavedChanges || isDraft) && budgetCategories.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            className="fixed top-8 right-6 z-40 bg-surface-container-highest border border-outline-variant/30 px-6 py-4 rounded-full shadow-2xl flex items-center gap-6"
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="fixed top-20 lg:top-6 right-4 md:right-6 lg:right-10 left-4 sm:left-auto z-40 bg-surface-container-highest/95 backdrop-blur-md border border-outline-variant/30 px-4 py-3 md:px-6 md:py-4 rounded-2xl shadow-2xl flex flex-col lg:flex-row items-stretch lg:items-center gap-2 lg:gap-6 transition-all duration-300"
           >
-            <div className="flex flex-col">
-              <span className="text-xs text-outline font-bold uppercase">Cambios sin guardar</span>
-              <span className="text-sm font-bold text-on-surface">
+            <div className="flex flex-row md:flex-col justify-between items-center md:items-start gap-2 mr-0 md:mr-2">
+              <span className="text-[10px] md:text-xs text-outline font-bold uppercase tracking-wider capitalize">
+                {isDraft ? `Borrador • ${monthYearStr}` : `Ajustes • ${monthYearStr}`}
+              </span>
+              <span className="text-xs md:text-sm font-bold text-on-surface">
                 Por asignar: <span className={remainingToAllocate < 0 ? 'text-error' : 'text-[#008f43]'}>{formatCurrency(remainingToAllocate)}</span>
               </span>
             </div>
-            <button
-              onClick={handleSaveBudget}
-              className="bg-[#005226] text-white px-6 py-2.5 rounded-full font-bold hover:bg-[#003d1c] shadow-md transition-all active:scale-95 flex items-center gap-2"
-            >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              ) : null}
-              Guardar Asignaciones
-            </button>
+
+            {isDraft ? (
+              <div className="flex items-center justify-between md:justify-start gap-4 md:gap-3 w-full md:w-auto">
+                <button
+                  onClick={handleSaveBudget}
+                  disabled={loading || !hasUnsavedChanges}
+                  className="flex items-center justify-center gap-2 text-sm font-bold text-on-surface hover:text-primary transition-colors disabled:opacity-50 py-2 px-3 hover:bg-surface-container rounded-xl md:rounded-none md:p-0"
+                >
+                  <IconDeviceFloppy size={18} /> Guardar
+                </button>
+                <div className="hidden md:block w-[1px] h-6 bg-outline-variant/30"></div>
+                {isPastMonth ? (
+                  <span className="text-xs text-outline italic px-2">No editable</span>
+                ) : (
+                  <button
+                    onClick={handleActivateBudget}
+                    disabled={loading}
+                    className="bg-[#005226] text-white px-5 py-2 md:px-6 md:py-2.5 rounded-full text-sm font-bold hover:bg-[#003d1c] shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 flex-1 md:flex-none"
+                  >
+                    {loading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
+                    Activar {capitalizedMonth}
+                  </button>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={handleSaveBudget}
+                disabled={loading}
+                className="bg-[#005226] text-white px-5 py-2 md:px-6 md:py-2.5 rounded-full text-sm font-bold hover:bg-[#003d1c] shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 w-full md:w-auto"
+              >
+                {loading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
+                Guardar en {capitalizedMonth}
+              </button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
