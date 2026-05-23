@@ -10,6 +10,7 @@ interface User {
 interface AuthState {
   user: User | null;
   token: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
   isInitializing: boolean; // true mientras se valida el token al recargar
 }
@@ -17,19 +18,20 @@ interface AuthState {
 const initialState: AuthState = {
   user: null,
   token: localStorage.getItem("token"),
+  refreshToken: localStorage.getItem("refreshToken"),
   isAuthenticated: false, // siempre false hasta que el servidor confirme
   isInitializing: !!localStorage.getItem("token"), // true solo si hay token guardado
 };
 
-// Thunk: valida el token y obtiene datos frescos del usuario al recargar
 export const initializeAuth = createAsyncThunk(
   "auth/initialize",
   async (_, { dispatch }) => {
     const token = localStorage.getItem("token");
+    const refreshToken = localStorage.getItem("refreshToken");
     if (!token) return;
     try {
       const response = await authService.getProfile();
-      dispatch(setCredentials({ user: response.user, token }));
+      dispatch(setCredentials({ user: response.user, token, refreshToken: refreshToken || "" }));
     } catch {
       // Token inválido o expirado → limpiar sesión
       dispatch(logout());
@@ -41,19 +43,23 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setCredentials: (state, action: PayloadAction<{ user: User; token: string }>) => {
+    setCredentials: (state, action: PayloadAction<{ user: User; token: string; refreshToken: string }>) => {
       state.user = action.payload.user;
       state.token = action.payload.token;
+      state.refreshToken = action.payload.refreshToken;
       state.isAuthenticated = true;
       state.isInitializing = false;
       localStorage.setItem("token", action.payload.token);
+      localStorage.setItem("refreshToken", action.payload.refreshToken);
     },
     logout: (state) => {
       state.user = null;
       state.token = null;
+      state.refreshToken = null;
       state.isAuthenticated = false;
       state.isInitializing = false;
       localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
     },
   },
   extraReducers: (builder) => {

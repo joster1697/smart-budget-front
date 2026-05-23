@@ -4,11 +4,13 @@ import DashboardHeader from "../components/dashboard/DashboardHeader";
 import DashboardNavbar from "../components/dashboard/DashboardNavbar";
 import Sidebar from "../components/dashboard/Sidebar";
 import DesktopChatInput from "../components/dashboard/DesktopChatInput";
+import { useAgentChat } from "../hooks/useAgentChat";
 import { useAppDispatch } from "../store/hooks";
 import { fetchAccounts } from "../store/slices/accountsSlice";
 
 export default function Dashboard() {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  useAgentChat(true); // Initialize global WebSocket connection
   const dispatch = useAppDispatch();
 
   useEffect(() => {

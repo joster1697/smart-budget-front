@@ -56,6 +56,7 @@ export default function Register() {
           setCredentials({
             user: response.user,
             token: response.tokens.accessToken,
+            refreshToken: response.tokens.refreshToken,
           }),
         );
         navigate("/dashboard");
@@ -241,10 +242,10 @@ export default function Register() {
                 )}
 
                 <div className="flex items-start gap-2 text-sm">
-                  <input 
-                    type="checkbox" 
-                    id="terms" 
-                    required 
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    required
                     className="mt-1"
                   />
                   <span className="text-on-surface-variant">

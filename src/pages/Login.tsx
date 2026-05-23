@@ -40,6 +40,7 @@ export default function Login() {
         setCredentials({
           user: response.user,
           token: response.tokens.accessToken,
+          refreshToken: response.tokens.refreshToken,
         }),
       );
       navigate("/dashboard");

@@ -2,7 +2,7 @@ import "./App.css";
 import { useEffect } from "react";
 import AppRoutes from "./routes/AppRoutes";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
-import { initializeAuth } from "./store/slices/authSlice";
+import { initializeAuth, logout } from "./store/slices/authSlice";
 // import Sidebar from "./components/menus/Sidebar.jsx";
 // import Footer from "./components/menus/Footer.jsx";
 
@@ -12,6 +12,15 @@ function App() {
 
   useEffect(() => {
     dispatch(initializeAuth());
+
+    const handleLogoutEvent = () => {
+      dispatch(logout());
+    };
+    
+    window.addEventListener("auth:logout", handleLogoutEvent);
+    return () => {
+      window.removeEventListener("auth:logout", handleLogoutEvent);
+    };
   }, [dispatch]);
 
   // Mientras se valida el token, no renderiza rutas para evitar redirecciones falsas
