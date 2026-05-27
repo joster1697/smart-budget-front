@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { CreditCardIcon, PlusIcon, TrashIcon } from "../../ui/Icons";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
-import { linkAccountThunk, unlinkAccountThunk } from "../../../store/slices/accountsSlice";
+import {
+  linkAccountThunk,
+  unlinkAccountThunk,
+} from "../../../store/slices/accountsSlice";
 
 interface LinkedCreditCardsProps {
   account?: any;
@@ -11,19 +14,20 @@ export default function LinkedCreditCards({ account }: LinkedCreditCardsProps) {
   const dispatch = useAppDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState("");
-
+  const [isUnlinkModalOpen, setIsUnlinkModalOpen] = useState(false);
+  const [cardToUnlinkId, setCardToUnlinkId] = useState<string | null>(null);
   const { accounts } = useAppSelector((state) => state.accounts);
 
   if (!account) return null;
 
   // Filtrar tarjetas vinculadas a la cuenta seleccionada
   const linkedCards = accounts.filter(
-    (acc) => acc.type === "credit" && acc.account_linked === account.id
+    (acc) => acc.type === "credit" && acc.account_linked === account.id,
   );
 
   // Filtrar tarjetas de crédito que no están vinculadas a ninguna cuenta
   const availableCards = accounts.filter(
-    (acc) => acc.type === "credit" && !acc.account_linked
+    (acc) => acc.type === "credit" && !acc.account_linked,
   );
 
   const handleLinkCard = async (e: React.FormEvent) => {
@@ -35,7 +39,7 @@ export default function LinkedCreditCards({ account }: LinkedCreditCardsProps) {
         linkAccountThunk({
           accountId: selectedCardId,
           linkedAccountId: account.id,
-        })
+        }),
       ).unwrap();
       setIsModalOpen(false);
       setSelectedCardId("");
@@ -43,14 +47,24 @@ export default function LinkedCreditCards({ account }: LinkedCreditCardsProps) {
       console.error("Error linking card:", err);
     }
   };
-
-  const handleUnlinkCard = async (cardId: string) => {
-    if (window.confirm("¿Estás seguro de que deseas desvincular esta tarjeta?")) {
-      try {
-        await dispatch(unlinkAccountThunk(cardId)).unwrap();
-      } catch (err) {
-        console.error("Error unlinking card:", err);
-      }
+  //Confirmation Modal to unlink a card
+  const handleUnlinkOpenModal = (cardId: string) => {
+    setCardToUnlinkId(cardId);
+    setIsUnlinkModalOpen(true);
+  };
+  //Closes the Confirmation Modal and clear the selected Id
+  const handleCloseUnlinkModal = () => {
+    setIsUnlinkModalOpen(false);
+    setCardToUnlinkId(null);
+  };
+  //Executes the unlink action thunk
+  const handleConfirmUnlink = async () => {
+    if (!cardToUnlinkId) return;
+    try {
+      await dispatch(unlinkAccountThunk(cardToUnlinkId)).unwrap();
+      handleCloseUnlinkModal();
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -104,7 +118,7 @@ export default function LinkedCreditCards({ account }: LinkedCreditCardsProps) {
                 </p>
               </div>
               <button
-                onClick={() => handleUnlinkCard(card.id)}
+                onClick={() => handleUnlinkOpenModal(card.id)}
                 className="w-9 h-9 rounded-lg hover:bg-red-50 text-[#ba1a1a] flex items-center justify-center cursor-pointer transition-colors"
                 title="Desvincular Tarjeta"
               >
@@ -199,6 +213,51 @@ export default function LinkedCreditCards({ account }: LinkedCreditCardsProps) {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+      {/*Unlink Confirmation Modal*/}
+      {isUnlinkModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white border border-outline-variant/30 rounded-3xl p-6 w-full max-w-md shadow-2xl flex flex-col gap-4 mx-4">
+            {/* Cabecera */}
+            <div className="flex justify-between items-center pb-2 border-b border-outline-variant/10">
+              <h3 className="text-lg font-bold text-[#1B252D]">
+                Desvincular Tarjeta
+              </h3>
+              <button
+                onClick={handleCloseUnlinkModal}
+                className="text-gray-500 hover:text-black text-xl cursor-pointer p-1"
+                aria-label="Cerrar"
+              >
+                &times;
+              </button>
+            </div>
+            {/* Contenido / Advertencia */}
+            <div className="py-4">
+              <p className="text-[14px] text-gray-600 leading-relaxed">
+                ¿Estás seguro de que deseas desvincular esta tarjeta de crédito?
+                La tarjeta no se eliminará del sistema, pero dejará de estar
+                asociada a esta cuenta principal.
+              </p>
+            </div>
+            {/* Botones de acción */}
+            <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={handleCloseUnlinkModal}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-[13px] font-bold px-4 py-2.5 rounded-xl cursor-pointer transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmUnlink}
+                className="bg-[#ba1a1a] hover:bg-[#a61717] text-white text-[13px] font-bold px-5 py-2.5 rounded-xl cursor-pointer transition-colors"
+              >
+                Desvincular
+              </button>
+            </div>
           </div>
         </div>
       )}

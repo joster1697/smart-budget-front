@@ -91,7 +91,7 @@ export default function Accounts() {
               icon={icon}
               balance={formattedBalance}
               virtualBalance={formattedVirtual}
-              isDark={account.type === "investment"}
+              isDark={account.type === "credit"}
               isSelected={account.id === selectedAccountId}
               onClick={() => setSelectedAccountId(account.id)}
             />

@@ -126,14 +126,23 @@ const api = {
   get: <TResponse>(endpoint: string, headers?: Record<string, string>) =>
     request<TResponse>({ method: "GET", endpoint, headers }),
 
-  post: <TResponse, TBody = unknown>(endpoint: string, body: TBody, headers?: Record<string, string>) =>
-    request<TResponse, TBody>({ method: "POST", endpoint, body, headers }),
+  post: <TResponse, TBody = unknown>(
+    endpoint: string,
+    body: TBody,
+    headers?: Record<string, string>,
+  ) => request<TResponse, TBody>({ method: "POST", endpoint, body, headers }),
 
-  put: <TResponse, TBody = unknown>(endpoint: string, body: TBody, headers?: Record<string, string>) =>
-    request<TResponse, TBody>({ method: "PUT", endpoint, body, headers }),
+  put: <TResponse, TBody = unknown>(
+    endpoint: string,
+    body: TBody,
+    headers?: Record<string, string>,
+  ) => request<TResponse, TBody>({ method: "PUT", endpoint, body, headers }),
 
-  patch: <TResponse, TBody = unknown>(endpoint: string, body: TBody, headers?: Record<string, string>) =>
-    request<TResponse, TBody>({ method: "PATCH", endpoint, body, headers }),
+  patch: <TResponse, TBody = unknown>(
+    endpoint: string,
+    body: TBody,
+    headers?: Record<string, string>,
+  ) => request<TResponse, TBody>({ method: "PATCH", endpoint, body, headers }),
 
   delete: <TResponse>(endpoint: string, headers?: Record<string, string>) =>
     request<TResponse>({ method: "DELETE", endpoint, headers }),
