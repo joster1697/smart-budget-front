@@ -63,7 +63,7 @@ export default function Register() {
       } else {
         setServerError("El Usuario ya existe");
       }
-    } catch (error: any) {
+    } catch {
       setServerError("Error al conectar con el servidor");
     }
   };

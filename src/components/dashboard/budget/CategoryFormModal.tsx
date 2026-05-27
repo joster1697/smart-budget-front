@@ -1,26 +1,19 @@
+import { use } from "react";
 import { motion } from "framer-motion";
 import { IconX } from "@tabler/icons-react";
+import { BudgetContext } from "./BudgetContext";
 import InputField from "../../ui/InputField";
 import Button from "../../ui/Button";
 
-interface CategoryFormModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  newCategoryName: string;
-  onNewCategoryNameChange: (name: string) => void;
-  onSaveCategory: () => void;
-  loading?: boolean;
-}
+export default function CategoryFormModal() {
+  const context = use(BudgetContext);
+  if (!context) return null;
 
-export default function CategoryFormModal({
-  isOpen,
-  onClose,
-  newCategoryName,
-  onNewCategoryNameChange,
-  onSaveCategory,
-  loading = false,
-}: CategoryFormModalProps) {
-  if (!isOpen) return null;
+  const { state, actions } = context;
+  const { isCategoryModalOpen, newCategoryName, loading } = state;
+  const { setIsCategoryModalOpen, setNewCategoryName, handleCreateCategory } = actions;
+
+  if (!isCategoryModalOpen) return null;
 
   return (
     <motion.div
@@ -37,7 +30,7 @@ export default function CategoryFormModal({
       >
         <div className="p-6 border-b border-outline-variant/20 flex justify-between items-center">
           <h3 className="text-xl font-bold text-on-surface">Nueva Categoría</h3>
-          <button onClick={onClose} className="text-outline hover:text-on-surface cursor-pointer border-none bg-transparent">
+          <button onClick={() => setIsCategoryModalOpen(false)} className="text-outline hover:text-on-surface cursor-pointer border-none bg-transparent">
             <IconX size={24} />
           </button>
         </div>
@@ -46,15 +39,15 @@ export default function CategoryFormModal({
             label="Nombre de la Categoría"
             type="text"
             value={newCategoryName}
-            onChange={(e) => onNewCategoryNameChange(e.target.value)}
+            onChange={(e) => setNewCategoryName(e.target.value)}
             placeholder="Ej. Compras"
           />
         </div>
         <div className="p-6 border-t border-outline-variant/20 flex justify-end gap-3 bg-surface-container/30">
-          <Button variant="secondary" onClick={onClose} disabled={loading}>
+          <Button variant="secondary" onClick={() => setIsCategoryModalOpen(false)} disabled={loading}>
             Cancelar
           </Button>
-          <Button variant="primary" onClick={onSaveCategory} disabled={!newCategoryName || loading}>
+          <Button variant="primary" onClick={handleCreateCategory} disabled={!newCategoryName || loading}>
             Crear
           </Button>
         </div>

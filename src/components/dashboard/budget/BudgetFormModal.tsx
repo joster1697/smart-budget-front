@@ -1,30 +1,21 @@
+import { use } from "react";
 import { motion } from "framer-motion";
 import { IconX } from "@tabler/icons-react";
+import { BudgetContext } from "./BudgetContext";
 import InputField from "../../ui/InputField";
 import Button from "../../ui/Button";
 
-interface BudgetFormModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  plannedIncome: number;
-  onPlannedIncomeChange: (amount: number) => void;
-  onSaveBudget: () => void;
-  monthYearStr: string;
-  isUpdate: boolean;
-  loading?: boolean;
-}
+export default function BudgetFormModal() {
+  const context = use(BudgetContext);
+  if (!context) return null;
 
-export default function BudgetFormModal({
-  isOpen,
-  onClose,
-  plannedIncome,
-  onPlannedIncomeChange,
-  onSaveBudget,
-  monthYearStr,
-  isUpdate,
-  loading = false,
-}: BudgetFormModalProps) {
-  if (!isOpen) return null;
+  const { state, actions } = context;
+  const { isModalOpen, plannedIncome, monthYearStr, budget, loading } = state;
+  const { setIsModalOpen, setPlannedIncome, handleSaveBudget } = actions;
+
+  if (!isModalOpen) return null;
+
+  const isUpdate = !!budget;
 
   return (
     <motion.div
@@ -41,7 +32,7 @@ export default function BudgetFormModal({
       >
         <div className="p-6 border-b border-outline-variant/20 flex justify-between items-center">
           <h3 className="text-xl font-bold text-on-surface">Configurar Presupuesto - <span className="capitalize">{monthYearStr}</span></h3>
-          <button onClick={onClose} className="text-outline hover:text-on-surface cursor-pointer border-none bg-transparent">
+          <button onClick={() => setIsModalOpen(false)} className="text-outline hover:text-on-surface cursor-pointer border-none bg-transparent">
             <IconX size={24} />
           </button>
         </div>
@@ -51,7 +42,7 @@ export default function BudgetFormModal({
               label="Ingresos Proyectados"
               type="number"
               value={plannedIncome || ""}
-              onChange={(e) => onPlannedIncomeChange(Number(e.target.value))}
+              onChange={(e) => setPlannedIncome(Number(e.target.value))}
               placeholder="0.00"
             />
             <p className="text-xs text-outline mt-2 text-left">
@@ -60,10 +51,10 @@ export default function BudgetFormModal({
           </div>
         </div>
         <div className="p-6 border-t border-outline-variant/20 flex justify-end gap-3 bg-surface-container/30">
-          <Button variant="secondary" onClick={onClose} disabled={loading}>
+          <Button variant="secondary" onClick={() => setIsModalOpen(false)} disabled={loading}>
             Cancelar
           </Button>
-          <Button variant="primary" onClick={onSaveBudget} loading={loading}>
+          <Button variant="primary" onClick={handleSaveBudget} loading={loading}>
             {isUpdate ? "Actualizar Ingresos" : "Crear Presupuesto Base"}
           </Button>
         </div>

@@ -1,22 +1,15 @@
+import { use } from "react";
 import { IconPencil } from "@tabler/icons-react";
+import { BudgetContext } from "./BudgetContext";
 
-interface BudgetSummaryProps {
-  plannedIncome: number;
-  totalAllocated: number;
-  remainingToAllocate: number;
-  isEditing: boolean;
-  onEditIncomeClick: () => void;
-  formatCurrency: (amount: number) => string;
-}
+export default function BudgetSummary() {
+  const context = use(BudgetContext);
+  if (!context) return null;
 
-export default function BudgetSummary({
-  plannedIncome,
-  totalAllocated,
-  remainingToAllocate,
-  isEditing,
-  onEditIncomeClick,
-  formatCurrency,
-}: BudgetSummaryProps) {
+  const { state, actions } = context;
+  const { plannedIncome, totalAllocatedInForm, remainingToAllocate, isEditing } = state;
+  const { setIsModalOpen, formatCurrency } = actions;
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -30,8 +23,8 @@ export default function BudgetSummary({
               Total Esperado
               {isEditing && (
                 <button
-                  onClick={onEditIncomeClick}
-                  className="p-1 hover:bg-primary-container text-[#005226] rounded-full transition-all duration-200 cursor-pointer"
+                  onClick={() => setIsModalOpen(true)}
+                  className="p-1 hover:bg-primary-container text-[#005226] rounded-full transition-all duration-200 cursor-pointer border-none bg-transparent"
                   title="Editar ingresos proyectados"
                 >
                   <IconPencil size={14} />
@@ -45,7 +38,7 @@ export default function BudgetSummary({
           <div className="flex sm:items-center flex-col">
             <span className="text-outline text-sm font-medium">Presupuestado</span>
             <span className="text-xl sm:text-2xl font-black text-on-surface whitespace-nowrap">
-              {formatCurrency(totalAllocated)}
+              {formatCurrency(totalAllocatedInForm)}
             </span>
           </div>
           <div className="flex sm:items-center flex-col">

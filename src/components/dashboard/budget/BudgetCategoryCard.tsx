@@ -1,3 +1,4 @@
+import { use } from "react";
 import {
   IconToolsKitchen2,
   IconCar,
@@ -8,6 +9,7 @@ import {
   IconArrowUp,
   IconArrowDown,
 } from "@tabler/icons-react";
+import { BudgetContext } from "./BudgetContext";
 
 export interface BudgetCategoryData {
   id: string;
@@ -21,11 +23,6 @@ export interface BudgetCategoryData {
 
 interface BudgetCategoryCardProps {
   category: BudgetCategoryData;
-  canEdit: boolean;
-  isActive: boolean;
-  plannedIncome: number;
-  onAllocationChange: (categoryId: string, amount: number) => void;
-  formatCurrency: (amount: number) => string;
 }
 
 const getCategoryIcon = (name: string) => {
@@ -38,20 +35,20 @@ const getCategoryIcon = (name: string) => {
   return <IconChartPie size={24} className="text-[#005226]" />;
 };
 
-export default function BudgetCategoryCard({
-  category,
-  canEdit,
-  isActive,
-  plannedIncome,
-  onAllocationChange,
-  formatCurrency,
-}: BudgetCategoryCardProps) {
+export default function BudgetCategoryCard({ category }: BudgetCategoryCardProps) {
+  const context = use(BudgetContext);
+  if (!context) return null;
+
+  const { state, actions } = context;
+  const { canEdit, isActive, plannedIncome } = state;
+  const { handleCategoryAllocationChange, formatCurrency } = actions;
+
   const handleRangeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onAllocationChange(category.id, Number(e.target.value));
+    handleCategoryAllocationChange(category.id, Number(e.target.value));
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onAllocationChange(category.id, Number(e.target.value));
+    handleCategoryAllocationChange(category.id, Number(e.target.value));
   };
 
   return (

@@ -16,6 +16,7 @@ import BudgetFormModal from "../../components/dashboard/budget/BudgetFormModal";
 import CategoryFormModal from "../../components/dashboard/budget/CategoryFormModal";
 import SaveBudgetBanner from "../../components/dashboard/budget/SaveBudgetBanner";
 import Button from "../../components/ui/Button";
+import { BudgetContext } from "../../components/dashboard/budget/BudgetContext";
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'CRC' }).format(amount);
@@ -254,167 +255,172 @@ export default function Budget() {
     return `Hola, aquí tienes el resumen de tu presupuesto activo de ${capitalizedMonth}. Todo tu capital disponible está asignado a tus categorías de forma balanceada.`;
   };
 
+  const contextValue = {
+    state: {
+      currentDate,
+      budget,
+      categories,
+      loading,
+      error,
+      isModalOpen,
+      isCategoryModalOpen,
+      plannedIncome,
+      budgetCategories,
+      hasUnsavedChanges,
+      isEditing,
+      newCategoryName,
+      monthYearStr,
+      periodStr,
+      isCurrentMonth,
+      isPastMonth,
+      capitalizedMonth,
+      totalAllocatedInForm,
+      remainingToAllocate,
+      isDraft,
+      isActive,
+      canEdit,
+      displayCategories,
+    },
+    actions: {
+      setCurrentDate,
+      setPlannedIncome,
+      setNewCategoryName,
+      setIsModalOpen,
+      setIsCategoryModalOpen,
+      prevMonth,
+      nextMonth,
+      handleSaveBudget,
+      handleActivateBudget,
+      handleCreateCategory,
+      handleToggleEditing,
+      handleCategoryAllocationChange,
+      formatCurrency,
+    }
+  };
+
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
-      className="flex flex-col gap-6"
-    >
-      <AIChatBubble
-        layoutId="agent-greeting"
-        message={getChatMessage()}
-      />
+    <BudgetContext value={contextValue}>
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="flex flex-col gap-6"
+      >
+        <AIChatBubble
+          layoutId="agent-greeting"
+          message={getChatMessage()}
+        />
 
-      <div className="flex flex-row sm:justify-between gap-4 mt-2 mb-1 flex-wrap">
-        {/* Selector de Mes */}
-        <div className="flex items-center gap-2 bg-surface-container-lowest px-4 py-1.5 rounded-full border border-outline-variant/30 shadow-sm">
-          <button onClick={prevMonth} className="p-1 hover:bg-surface-container rounded-full transition-colors text-on-surface cursor-pointer border-none bg-transparent">
-            <IconChevronLeft size={16} />
-          </button>
-          <span className="font-bold text-[#005226] min-w-[120px] text-center capitalize text-sm select-none">
-            {monthYearStr}
-          </span>
-          <button onClick={nextMonth} className="p-1 hover:bg-surface-container rounded-full transition-colors text-on-surface cursor-pointer border-none bg-transparent">
-            <IconChevronRight size={16} />
-          </button>
-        </div>
-
-        {/* Badges de Estado */}
-        <div className="flex items-center gap-2 flex-wrap select-none">
-          {budget && (
-            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isDraft ? 'bg-secondary-container text-on-secondary-container' : 'bg-[#008f43]/15 text-[#008f43]'
-              }`}>
-              {isDraft ? 'Borrador' : 'Activo'}
+        <div className="flex flex-row sm:justify-between gap-4 mt-2 mb-1 flex-wrap">
+          {/* Selector de Mes */}
+          <div className="flex items-center gap-2 bg-surface-container-lowest px-4 py-1.5 rounded-full border border-outline-variant/30 shadow-sm">
+            <button onClick={prevMonth} className="p-1 hover:bg-surface-container rounded-full transition-colors text-on-surface cursor-pointer border-none bg-transparent">
+              <IconChevronLeft size={16} />
+            </button>
+            <span className="font-bold text-[#005226] min-w-[120px] text-center capitalize text-sm select-none">
+              {monthYearStr}
             </span>
-          )}
-          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${isCurrentMonth
-            ? 'bg-[#005226]/10 text-[#005226] border-[#005226]/30'
-            : isPastMonth
-              ? 'bg-surface-container text-outline border-outline-variant/30'
-              : 'bg-blue-500/10 text-blue-700 border-blue-500/20'
-            }`}>
-            {isCurrentMonth ? 'Mes Actual' : isPastMonth ? 'Histórico' : 'Planificación'}
-          </span>
-        </div>
-      </div>
-
-      {loading ? (
-        <div className="flex justify-center p-10">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#005226]"></div>
-        </div>
-      ) : error ? (
-        <div className="bg-error-container text-on-error-container p-4 rounded-xl">{error}</div>
-      ) : (
-        <>
-          {/* Summary Card */}
-          <BudgetSummary
-            plannedIncome={plannedIncome}
-            totalAllocated={totalAllocatedInForm}
-            remainingToAllocate={remainingToAllocate}
-            isEditing={isEditing}
-            onEditIncomeClick={() => setIsModalOpen(true)}
-            formatCurrency={formatCurrency}
-          />
-
-          {/* Categories Section */}
-          <div>
-            <div className="flex flex-col justify-between sm:flex-row sm:items-center gap-2 mb-4">
-              <h3 className="text-xl font-bold text-on-surface font-manrope">Categorías de Presupuesto</h3>
-              <div className="flex items-center gap-3">
-                {isActive && (
-                  <button
-                    onClick={handleToggleEditing}
-                    className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all duration-300 shadow-sm cursor-pointer ${isEditing
-                      ? "bg-[#005226] text-white hover:bg-[#003d1c]"
-                      : "bg-surface-container text-outline hover:text-on-surface border border-outline-variant/30 hover:border-outline-variant"
-                      }`}
-                  >
-                    {isEditing ? <IconLockOpen size={14} /> : <IconLock size={14} />}
-                    <span>{isEditing ? "Modo Ajuste" : "Ajustar Límites"}</span>
-                  </button>
-                )}
-                {canEdit && (
-                  <button
-                    onClick={() => setIsCategoryModalOpen(true)}
-                    className="flex items-center gap-1 text-sm font-bold text-[#005226] hover:bg-primary-container px-3 py-1.5 rounded-full transition-colors border-none bg-transparent cursor-pointer"
-                  >
-                    <IconPlus size={16} /> Añadir Categoría
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {!budget ? (
-              <div className="text-center py-10 bg-surface-container-lowest rounded-2xl border border-outline-variant/20">
-                <p className="text-outline mb-4">No hay presupuesto configurado para este mes.</p>
-                {currentDate >= new Date(new Date().getFullYear(), new Date().getMonth(), 1) && (
-                  <Button variant="primary" onClick={() => setIsModalOpen(true)}>
-                    Crear Presupuesto
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                {displayCategories.map((cat) => (
-                  <BudgetCategoryCard
-                    key={cat.id}
-                    category={cat}
-                    canEdit={canEdit}
-                    isActive={isActive}
-                    plannedIncome={plannedIncome}
-                    onAllocationChange={handleCategoryAllocationChange}
-                    formatCurrency={formatCurrency}
-                  />
-                ))}
-              </div>
-            )}
+            <button onClick={nextMonth} className="p-1 hover:bg-surface-container rounded-full transition-colors text-on-surface cursor-pointer border-none bg-transparent">
+              <IconChevronRight size={16} />
+            </button>
           </div>
-        </>
-      )}
 
-      {/* Edit Budget Modal */}
-      <AnimatePresence>
-        <BudgetFormModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          plannedIncome={plannedIncome}
-          onPlannedIncomeChange={setPlannedIncome}
-          onSaveBudget={handleSaveBudget}
-          monthYearStr={monthYearStr}
-          isUpdate={!!budget}
-          loading={loading}
-        />
-      </AnimatePresence>
+          {/* Badges de Estado */}
+          <div className="flex items-center gap-2 flex-wrap select-none">
+            {budget && (
+              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isDraft ? 'bg-secondary-container text-on-secondary-container' : 'bg-[#008f43]/15 text-[#008f43]'
+                }`}>
+                {isDraft ? 'Borrador' : 'Activo'}
+              </span>
+            )}
+            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${isCurrentMonth
+              ? 'bg-[#005226]/10 text-[#005226] border-[#005226]/30'
+              : isPastMonth
+                ? 'bg-surface-container text-outline border-outline-variant/30'
+                : 'bg-blue-500/10 text-blue-700 border-blue-500/20'
+              }`}>
+              {isCurrentMonth ? 'Mes Actual' : isPastMonth ? 'Histórico' : 'Planificación'}
+            </span>
+          </div>
+        </div>
 
-      {/* Add Category Modal */}
-      <AnimatePresence>
-        <CategoryFormModal
-          isOpen={isCategoryModalOpen}
-          onClose={() => setIsCategoryModalOpen(false)}
-          newCategoryName={newCategoryName}
-          onNewCategoryNameChange={setNewCategoryName}
-          onSaveCategory={handleCreateCategory}
-          loading={loading}
-        />
-      </AnimatePresence>
+        {loading ? (
+          <div className="flex justify-center p-10">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#005226]"></div>
+          </div>
+        ) : error ? (
+          <div className="bg-error-container text-on-error-container p-4 rounded-xl">{error}</div>
+        ) : (
+          <>
+            {/* Summary Card */}
+            <BudgetSummary />
 
-      {/* Global Save Button for Unsaved Changes / Draft Mode */}
-      <AnimatePresence>
-        <SaveBudgetBanner
-          isVisible={(!loading && (hasUnsavedChanges || isDraft) && budgetCategories.length > 0)}
-          isDraft={isDraft}
-          monthYearStr={monthYearStr}
-          remainingToAllocate={remainingToAllocate}
-          isPastMonth={isPastMonth}
-          capitalizedMonth={capitalizedMonth}
-          loading={loading}
-          hasUnsavedChanges={hasUnsavedChanges}
-          onSaveBudget={handleSaveBudget}
-          onActivateBudget={handleActivateBudget}
-          formatCurrency={formatCurrency}
-        />
-      </AnimatePresence>
-    </motion.section>
+            {/* Categories Section */}
+            <div>
+              <div className="flex flex-col justify-between sm:flex-row sm:items-center gap-2 mb-4">
+                <h3 className="text-xl font-bold text-on-surface font-manrope">Categorías de Presupuesto</h3>
+                <div className="flex items-center gap-3">
+                  {isActive && (
+                    <button
+                      onClick={handleToggleEditing}
+                      className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all duration-300 shadow-sm cursor-pointer ${isEditing
+                        ? "bg-[#005226] text-white hover:bg-[#003d1c]"
+                        : "bg-surface-container text-outline hover:text-on-surface border border-outline-variant/30 hover:border-outline-variant"
+                        }`}
+                    >
+                      {isEditing ? <IconLockOpen size={14} /> : <IconLock size={14} />}
+                      <span>{isEditing ? "Modo Ajuste" : "Ajustar Límites"}</span>
+                    </button>
+                  )}
+                  {canEdit && (
+                    <button
+                      onClick={() => setIsCategoryModalOpen(true)}
+                      className="flex items-center gap-1 text-sm font-bold text-[#005226] hover:bg-primary-container px-3 py-1.5 rounded-full transition-colors border-none bg-transparent cursor-pointer"
+                    >
+                      <IconPlus size={16} /> Añadir Categoría
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {!budget ? (
+                <div className="text-center py-10 bg-surface-container-lowest rounded-2xl border border-outline-variant/20">
+                  <p className="text-outline mb-4">No hay presupuesto configurado para este mes.</p>
+                  {currentDate >= new Date(new Date().getFullYear(), new Date().getMonth(), 1) && (
+                    <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+                      Crear Presupuesto
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                  {displayCategories.map((cat) => (
+                    <BudgetCategoryCard
+                      key={cat.id}
+                      category={cat}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Edit Budget Modal */}
+        <AnimatePresence>
+          <BudgetFormModal />
+        </AnimatePresence>
+
+        {/* Add Category Modal */}
+        <AnimatePresence>
+          <CategoryFormModal />
+        </AnimatePresence>
+
+        {/* Global Save Button for Unsaved Changes / Draft Mode */}
+        <AnimatePresence>
+          <SaveBudgetBanner />
+        </AnimatePresence>
+      </motion.section>
+    </BudgetContext>
   );
 }

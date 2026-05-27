@@ -1,5 +1,5 @@
 import { IconCheck, IconX, IconListDetails } from "@tabler/icons-react";
-import { ResolvedAction } from "../../types/chat";
+import { ResolvedAction, ActionCandidate } from "../../types/chat";
 import { useAgentChat } from "../../hooks/useAgentChat";
 
 interface ActionInlineButtonsProps {
@@ -33,7 +33,7 @@ export default function ActionInlineButtons({ action, actionIndex }: ActionInlin
 
       {shouldShowCandidates ? (
         <div className="flex flex-col gap-2">
-          {action.candidates?.map((candidate: any, candidateIdx) => {
+          {action.candidates?.map((candidate: ActionCandidate, candidateIdx) => {
             const candidateName = candidate.name || candidate.title || candidate.description || `Opción ${candidateIdx + 1}`;
             return (
               <button

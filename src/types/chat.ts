@@ -41,8 +41,10 @@ export type ClientPayload =
 
 // Server -> Client
 export interface ActionCandidate {
-    // Definimos esto si sabemos qué tiene, por ahora genérico
-    [key: string]: unknown; 
+  name?: string;
+  title?: string;
+  description?: string;
+  [key: string]: unknown; 
 }
 
 export interface ResolvedAction {
