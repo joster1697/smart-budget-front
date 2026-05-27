@@ -20,7 +20,7 @@ export default function AIChatBubble({ message, icon, className = "", layoutId }
       </div>
       <div className="bg-surface-container-lowest rounded-2xl rounded-tl-sm p-4 shadow-sm border border-outline-variant/20 flex-1 min-w-0">
         <div className="text-sm font-medium text-on-surface leading-snug break-words">
-          {typeof message === "string" ? <p>{message}</p> : message}
+          {typeof message === "string" ? <p className="whitespace-pre-line">{message}</p> : message}
         </div>
       </div>
     </motion.div>

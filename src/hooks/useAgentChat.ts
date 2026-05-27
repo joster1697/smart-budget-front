@@ -118,14 +118,23 @@ export function useAgentChat(initConnection = false): UseAgentChatReturn {
 
   useEffect(() => {
     if (initConnection && token) {
+      disconnect(); // Cerrar la conexión anterior con el token viejo si existía
       connect();
+    } else if (initConnection && !token) {
+      disconnect();
     }
+    return () => {
+      // Separamos la limpieza para que solo desconecte en desmontaje
+    };
+  }, [initConnection, token, connect, disconnect]);
+
+  useEffect(() => {
     return () => {
       if (initConnection) {
         disconnect();
       }
     };
-  }, [initConnection, token, connect, disconnect]);
+  }, [initConnection, disconnect]);
 
   const sendPayload = useCallback(
     (payload: ClientPayload) => {
