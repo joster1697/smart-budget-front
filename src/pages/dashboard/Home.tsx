@@ -18,11 +18,14 @@ import ActivityItem from "../../components/dashboard/ActivityItem";
 import PaymentCard from "../../components/dashboard/PaymentCard";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useNavigate } from "react-router-dom";
+import { div, style } from "framer-motion/client";
+import { fetchTransactions } from "../../store/slices/transactionsSlice";
 
 export default function Home() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { accounts } = useAppSelector((state) => state.accounts);
+  const { transactions } = useAppSelector((state) => state.transactions);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null,
   );
@@ -32,6 +35,62 @@ export default function Home() {
       setSelectedAccountId(accounts[0].id);
     }
   }, [accounts, selectedAccountId]);
+
+  useEffect(() => {
+    dispatch(fetchTransactions({ limit: 10 }));
+  }, [dispatch]);
+
+  const formatTxCurrency = (value: number) =>
+    new Intl.NumberFormat("es-CR", {
+      style: "currency",
+      currency: "CRC",
+    }).format(value);
+
+  const formatTxDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("es-CR", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const getCategoryIcon = (categoryName?: string) => {
+    const name = categoryName?.toLowerCase() || "";
+    if (
+      name.includes("supermercado") ||
+      name.includes("compras") ||
+      name.includes("shopping")
+    ) {
+      return <IconShoppingCart size={20} className="text-on-surface-variant" />;
+    }
+    if (
+      name.includes("restaurante") ||
+      name.includes("comida") ||
+      name.includes("food")
+    ) {
+      return (
+        <IconToolsKitchen2 size={20} className="text-on-surface-variant" />
+      );
+    }
+    if (
+      name.includes("servicio") ||
+      name.includes("luz") ||
+      name.includes("agua") ||
+      name.includes("bulb")
+    ) {
+      return <IconBulb size={20} className="text-on-surface-variant" />;
+    }
+    if (
+      name.includes("streaming") ||
+      name.includes("suscripción") ||
+      name.includes("entretenimiento")
+    ) {
+      return <IconDeviceTv size={20} className="text-on-surface-variant" />;
+    }
+    return <IconCash size={20} className="text-on-surface-variant" />;
+  };
   return (
     <section className="flex flex-col gap-6">
       {/* Greeting Card */}
@@ -89,53 +148,36 @@ export default function Home() {
             <h2 className="text-[22px] font-black tracking-tight text-[#001f26] font-manrope">
               Actividad Reciente
             </h2>
-            <IconHistory size={22} className="text-outline" />
-          </div>
-          <div className="space-y-5">
-            <ActivityItem
-              icon={
-                <IconShoppingCart
-                  size={20}
-                  className="text-on-surface-variant"
-                />
-              }
-              title="Supermercado El Sol"
-              date="Hoy, 10:45 AM"
-              amount="₡1,450.00"
-            />
-            <ActivityItem
-              icon={<IconCash size={20} className="text-[#005226]" />}
-              title="Transferencia Recibida"
-              date="Ayer"
-              amount="₡12,000.00"
-              isNegative={false}
-              iconBgClass="bg-primary-container/40"
-            />
-            <ActivityItem
-              icon={
-                <IconToolsKitchen2
-                  size={20}
-                  className="text-on-surface-variant"
-                />
-              }
-              title="Restaurante La Noche"
-              date="Ayer"
-              amount="₡2,890.00"
-            />
-            <ActivityItem
-              icon={
-                <IconDeviceTv size={20} className="text-on-surface-variant" />
-              }
-              title="Suscripción Streaming"
-              date="24 Oct"
-              amount="₡199.00"
-            />
-            <ActivityItem
-              icon={<IconBulb size={20} className="text-on-surface-variant" />}
-              title="Pago de Luz"
-              date="22 Oct"
-              amount="₡840.00"
-            />
+            <div className="space-y-5">
+              {transactions.length > 0 ? (
+                transactions.map((transaction) => {
+                  const isIncome = transaction.type === "income";
+                  return (
+                    <ActivityItem
+                      key={transaction.id}
+                      icon={
+                        isIncome ? (
+                          <IconCash size={20} />
+                        ) : (
+                          getCategoryIcon(transaction.category?.name)
+                        )
+                      }
+                      title={transaction.description || "Transaction"}
+                      date={formatTxDate(transaction.date)}
+                      amount={formatTxCurrency(transaction.amount)}
+                      isNegative={!isIncome}
+                      iconBgClass={
+                        isIncome ? "bg-primary-container/40" : undefined
+                      }
+                    />
+                  );
+                })
+              ) : (
+                <div className="text-center py-6 text-sm text-gray-500">
+                  No hay transacciones reciente
+                </div>
+              )}
+            </div>
           </div>
           <div className="mt-6 text-center">
             <button className="text-[13px] font-bold text-[#005226] hover:opacity-80">
