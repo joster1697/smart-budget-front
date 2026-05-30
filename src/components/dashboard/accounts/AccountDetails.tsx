@@ -1,9 +1,80 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BankIcon, EditIcon } from "../../ui/Icons";
 import { IconListDetails } from "@tabler/icons-react";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
+import { updateCreatedAccount } from "../../../store/slices/accountsSlice";
 
-export default function AccountDetails() {
+export default function AccountDetails({ account }: { account: any }) {
   const [accountName, setAccountName] = useState("Primary Checking");
+
+  const dispatch = useAppDispatch();
+  const [adjustment, setAdjustment] = useState("");
+  const { accounts } = useAppSelector((state) => state.accounts);
+
+  const handleApplyAdjustment = async () => {
+    if (!account) return;
+    try {
+      const adjustmentValue = Number(adjustment);
+      if (isNaN(adjustmentValue)) return;
+      const newBalance = adjustmentValue;
+      await dispatch(
+        updateCreatedAccount({
+          ...account,
+          balance: newBalance,
+        }),
+      ).unwrap();
+      setAdjustment("");
+    } catch (error) {
+      console.error("Error: ", error);
+    }
+  };
+
+  const handleSaveName = async () => {
+    if (!account) return;
+    try {
+      await dispatch(
+        updateCreatedAccount({
+          ...account,
+          name: accountName,
+        }),
+      ).unwrap();
+    } catch (error) {
+      console.error("Error while updating account: ", error);
+    }
+  };
+
+  useEffect(() => {
+    if (!account) return;
+    setAccountName(account.name);
+  }, [account]);
+
+  if (!account) {
+    return (
+      <div className="p-6 text-center text-[#424943]">
+        Cargando detalles de la cuenta...
+      </div>
+    );
+  }
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("es-CR", {
+      style: "currency",
+      currency: "CRC",
+    }).format(value);
+
+  console.log("DEBUG: selected account is", account);
+
+  const linkedCreditCards = accounts.filter(
+    (acc) => acc.type === "credit" && acc.account_linked === account.id
+  );
+
+  const creditCardsPending = linkedCreditCards.reduce(
+    (sum, card) => sum + Number(card.balance),
+    0
+  );
+
+  const pendingAmount = Number(account.reserved_balance ?? 0) + creditCardsPending;
+
+  const virtualBalance = Number(account.balance - pendingAmount);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-2">
@@ -32,7 +103,10 @@ export default function AccountDetails() {
             onChange={(e) => setAccountName(e.target.value)}
             className="flex-1 border border-outline-variant/40 rounded-lg p-3 bg-[#fbfdfc] text-[#1B252D] font-medium focus:outline-none focus:border-primary-fixed hover:border-primary-fixed cursor-pointer transition-all duration-300 hover:shadow-md"
           />
-          <button className="bg-[#e4e6e5]/60 transition-colors px-6 py-3 rounded-lg font-bold text-[#1B252D] text-[14px]  cursor-pointer border-2 border-primary-fixed hover:bg-primary-fixed">
+          <button
+            onClick={handleSaveName}
+            className="bg-[#e4e6e5]/60 transition-colors px-6 py-3 rounded-lg font-bold text-[#1B252D] text-[14px]  cursor-pointer border-2 border-primary-fixed hover:bg-primary-fixed"
+          >
             Save
           </button>
         </div>
@@ -52,16 +126,25 @@ export default function AccountDetails() {
         <div className="flex justify-between items-center mt-6">
           <span className="text-[#424943] text-[14px]">Real Balance</span>
           <span className="text-[#1B252D] font-medium text-[15px] tabular-nums">
-            $42,500.00
+            {formatCurrency(account.balance)}
           </span>
         </div>
 
         <div className="flex justify-between items-center mt-3">
           <span className="text-[#ba1a1a] text-[14px]">Pending Amounts</span>
           <span className="text-[#ba1a1a] font-medium text-[15px] tabular-nums">
-            -$150.00
+            -{formatCurrency(Number(account.reserved_balance ?? 0))}
           </span>
         </div>
+
+        {creditCardsPending > 0 && (
+          <div className="flex justify-between items-center mt-3">
+            <span className="text-[#ba1a1a] text-[14px]">Tarjetas Ligadas</span>
+            <span className="text-[#ba1a1a] font-medium text-[15px] tabular-nums">
+              -{formatCurrency(creditCardsPending)}
+            </span>
+          </div>
+        )}
 
         <div className="h-px w-full bg-[#c4c7c5]/50 my-5"></div>
 
@@ -70,7 +153,7 @@ export default function AccountDetails() {
             Virtual Balance
           </span>
           <span className="text-[#2ae574] font-bold text-[16px] tabular-nums tracking-wide">
-            $42,350.00
+            {formatCurrency(virtualBalance)}
           </span>
         </div>
 
@@ -79,11 +162,16 @@ export default function AccountDetails() {
         </span>
         <div className="flex items-center gap-3 mt-2 max-w-sm">
           <input
-            type="text"
-            placeholder="$0.00"
+            type="number"
+            value={adjustment}
+            onChange={(e) => setAdjustment(e.target.value)}
+            placeholder={formatCurrency(0)}
             className="flex-1 border border-outline-variant/40 rounded-lg p-2.5 bg-white text-[#1B252D] focus:outline-none focus:border-[#006b3a] transition-colors"
           />
-          <button className="bg-[#e4e6e5]/60 transition-colors px-6 py-2.5 rounded-lg font-bold text-[#1B252D] text-[13px] cursor-pointer border-2 border-primary-fixed hover:bg-primary-fixed">
+          <button
+            onClick={handleApplyAdjustment}
+            className="bg-[#e4e6e5]/60 transition-colors px-6 py-2.5 rounded-lg font-bold text-[#1B252D] text-[13px] cursor-pointer border-2 border-primary-fixed hover:bg-primary-fixed"
+          >
             Apply
           </button>
         </div>

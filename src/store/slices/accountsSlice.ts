@@ -1,21 +1,16 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-export interface Account {
-  id: string;
-  name: string;
-  type: "checking" | "savings" | "credit" | "investment";
-  balance: number;
-  currency: string;
-}
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import accountService, { Account } from "../../services/accountService";
 
 interface AccountsState {
   accounts: Account[];
   loading: boolean;
+  error?: string | null;
 }
 
 const initialState: AccountsState = {
   accounts: [],
   loading: false,
+  error: null,
 };
 
 const accountsSlice = createSlice({
@@ -39,8 +34,167 @@ const accountsSlice = createSlice({
       state.loading = action.payload;
     },
   },
+
+  extraReducers: (builder) => {
+    builder
+      //Fetch Accounts
+      .addCase(fetchAccounts.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchAccounts.fulfilled, (state, action) => {
+        state.accounts = action.payload.accounts;
+        state.loading = false;
+      })
+      //Create Accounts
+      .addCase(fetchAccounts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Error while fetching accounts";
+      })
+      .addCase(createNewAccount.fulfilled, (state, action) => {
+        state.accounts.push(action.payload);
+        state.loading = false;
+      })
+      .addCase(createNewAccount.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Error while creating account";
+      })
+      //Update Accounts
+      .addCase(updateCreatedAccount.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.accounts.findIndex(
+          (acc) => acc.id === action.payload.id,
+        );
+        if (index !== -1) {
+          state.accounts[index] = action.payload;
+        }
+      })
+      .addCase(updateCreatedAccount.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Error while updating account";
+      })
+      //Delete Accounts
+      .addCase(deleteCreatedAccount.fulfilled, (state, action) => {
+        state.loading = false;
+        state.accounts = state.accounts.filter(
+          (acc) => acc.id !== action.payload,
+        );
+      })
+      .addCase(deleteCreatedAccount.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Error while deleting account";
+      })
+      //Link Account
+      .addCase(linkAccountThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.accounts.findIndex((a) => a.id === action.payload.id);
+        if (index !== -1) {
+          state.accounts[index] = action.payload;
+        }
+      })
+      .addCase(linkAccountThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Error while linking account";
+      })
+      //Unlink Account
+      .addCase(unlinkAccountThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.accounts.findIndex((a) => a.id === action.payload.id);
+        if (index !== -1) {
+          state.accounts[index] = action.payload;
+        }
+      })
+      .addCase(unlinkAccountThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Error while unlinking account";
+      });
+  },
 });
 
-export const { setAccounts, addAccount, updateAccount, removeAccount, setLoading } =
-  accountsSlice.actions;
+export const fetchAccounts = createAsyncThunk(
+  "accounts/fetchAccounts",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await accountService.getAccounts();
+      return response;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  },
+);
+
+export const createNewAccount = createAsyncThunk(
+  "accounts/createNewAccount",
+  async (data: Omit<Account, "id">, { rejectWithValue }) => {
+    try {
+      const response = await accountService.createAccount(data);
+      return (response as any).account as Account;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  },
+);
+
+export const updateCreatedAccount = createAsyncThunk(
+  "accounts/updateAccount",
+  async (account: Account, { rejectWithValue }) => {
+    try {
+      const { id, ...updateData } = account;
+      if (updateData.account_linked === null) {
+        delete updateData.account_linked;
+      }
+      const response = await accountService.updateAccount(id, updateData);
+      return (response as any).account as Account;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  },
+);
+
+export const deleteCreatedAccount = createAsyncThunk(
+  "accounts/deleteAccount",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await accountService.deleteAccount(id);
+      return id;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  },
+);
+
+export const linkAccountThunk = createAsyncThunk(
+  "accounts/linkAccount",
+  async (
+    { accountId, linkedAccountId }: { accountId: string; linkedAccountId: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await accountService.linkAccount(accountId, linkedAccountId);
+      return (response as any).account as Account;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  },
+);
+
+export const unlinkAccountThunk = createAsyncThunk(
+  "accounts/unlinkAccount",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await accountService.unlinkAccount(id);
+      return (response as any).account as Account;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  },
+);
+
+
+export const {
+  setAccounts,
+  addAccount,
+  updateAccount,
+  removeAccount,
+  setLoading,
+} = accountsSlice.actions;
 export default accountsSlice.reducer;

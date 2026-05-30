@@ -20,7 +20,9 @@ export default function Sidebar() {
         <h1 className="text-3xl font-black tracking-tighter text-[#38e07b] font-manrope">
           Fynkro
         </h1>
-        <p className="text-xs text-white/50 font-medium mt-1">Financial Sanctuary</p>
+        <p className="text-xs text-white/50 font-medium mt-1">
+          Financial Sanctuary
+        </p>
       </div>
 
       {/* Navigation */}
@@ -31,8 +33,8 @@ export default function Sidebar() {
             to={to}
             className={({ isActive }) =>
               `flex items-center gap-4 px-4 py-3 rounded-xl transition-colors font-medium text-sm ${
-                isActive 
-                  ? "bg-[#00210c] text-[#38e07b]" 
+                isActive
+                  ? "bg-[#00210c] text-[#38e07b]"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`
             }
@@ -55,11 +57,15 @@ export default function Sidebar() {
             />
           </div>
           <div>
-            <p className="text-sm font-bold text-white leading-tight">Jorge Ramirez</p>
-            <p className="text-[10px] font-bold text-[#38e07b] uppercase mt-0.5">Plan Premium</p>
+            <p className="text-sm font-bold text-white leading-tight">
+              Jorge Ramirez
+            </p>
+            <p className="text-[10px] font-bold text-[#38e07b] uppercase mt-0.5">
+              Plan Premium
+            </p>
           </div>
         </div>
-        <button 
+        <button
           onClick={handleLogout}
           className="flex items-center gap-3 text-white/50 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider w-full"
         >
