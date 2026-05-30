@@ -3,7 +3,7 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
 import Home from "../pages/dashboard/Home";
-import Activity from "../pages/dashboard/Activity";
+import Transactions from "../pages/dashboard/Transactions";
 import Accounts from "../pages/dashboard/Accounts";
 import Reports from "../pages/dashboard/Reports";
 import Chat from "../pages/dashboard/Chat";
@@ -28,7 +28,7 @@ const AppRoutes = () => {
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<Navigate to="home" replace />} />
           <Route path="home" element={<Home />} />
-          <Route path="activity" element={<Activity />} />
+          <Route path="transactions" element={<Transactions />} />
           <Route path="accounts" element={<Accounts />} />
           <Route path="reports" element={<Reports />} />
           <Route path="chat" element={<Chat />} />

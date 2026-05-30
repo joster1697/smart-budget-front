@@ -148,39 +148,43 @@ export default function Home() {
             <h2 className="text-[22px] font-black tracking-tight text-[#001f26] font-manrope">
               Actividad Reciente
             </h2>
-            <div className="space-y-5">
-              {transactions.length > 0 ? (
-                transactions.map((transaction) => {
-                  const isIncome = transaction.type === "income";
-                  return (
-                    <ActivityItem
-                      key={transaction.id}
-                      icon={
-                        isIncome ? (
-                          <IconCash size={20} />
-                        ) : (
-                          getCategoryIcon(transaction.category?.name)
-                        )
-                      }
-                      title={transaction.description || "Transaction"}
-                      date={formatTxDate(transaction.date)}
-                      amount={formatTxCurrency(transaction.amount)}
-                      isNegative={!isIncome}
-                      iconBgClass={
-                        isIncome ? "bg-primary-container/40" : undefined
-                      }
-                    />
-                  );
-                })
-              ) : (
-                <div className="text-center py-6 text-sm text-gray-500">
-                  No hay transacciones reciente
-                </div>
-              )}
-            </div>
           </div>
+          <div className="space-y-5">
+            {transactions.length > 0 ? (
+              transactions.map((transaction) => {
+                const isIncome = transaction.type === "income";
+                return (
+                  <ActivityItem
+                    key={transaction.id}
+                    icon={
+                      isIncome ? (
+                        <IconCash size={20} />
+                      ) : (
+                        getCategoryIcon(transaction.category?.name)
+                      )
+                    }
+                    title={transaction.description || "Transaction"}
+                    date={formatTxDate(transaction.date)}
+                    amount={formatTxCurrency(transaction.amount)}
+                    isNegative={!isIncome}
+                    iconBgClass={
+                      isIncome ? "bg-primary-container/40" : undefined
+                    }
+                  />
+                );
+              })
+            ) : (
+              <div className="text-center py-6 text-sm text-gray-500">
+                No hay transacciones reciente
+              </div>
+            )}
+          </div>
+
           <div className="mt-6 text-center">
-            <button className="text-[13px] font-bold text-[#005226] hover:opacity-80">
+            <button
+              onClick={() => navigate("/dashboard/transactions")}
+              className="text-[13px] font-bold text-[#005226] hover:opacity-80 cursor-pointer"
+            >
               Ver toda la actividad &gt;
             </button>
           </div>
@@ -194,7 +198,7 @@ export default function Home() {
             </h2>
             <IconCalendarEvent size={22} className="text-[#005226]" />
           </div>
-          <div className="space-y-3">
+          <div className="">
             <PaymentCard
               day="15"
               month="OCT"

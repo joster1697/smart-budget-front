@@ -1,4 +1,4 @@
-export default function Activity() {
+export default function Transactions() {
   return (
     <section className="flex-col mt-4">
       <h2 className="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3 px-1">
