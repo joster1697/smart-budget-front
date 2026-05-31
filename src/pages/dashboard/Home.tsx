@@ -15,7 +15,7 @@ import {
 import AIChatBubble from "../../components/dashboard/AIChatBubble";
 import AccountCard from "../../components/dashboard/AccountCard";
 import ActivityItem from "../../components/dashboard/ActivityItem";
-import PaymentCard from "../../components/dashboard/PaymentCard";
+import PaymentCard from "../../components/dashboard/TransactionCard";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useNavigate } from "react-router-dom";
 import { div, style } from "framer-motion/client";
