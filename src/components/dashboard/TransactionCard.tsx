@@ -28,7 +28,7 @@ export default function TransactionCard({
 
         {/* Cuerpo del calendario (Día) */}
         <div className="flex-1 flex items-center justify-center w-full bg-white dark:bg-neutral-900">
-          <span className="text-base font-black text-on-surface leading-none -mt-0.5">
+          <span className="text-base font-black text-white leading-none -mt-0.5">
             {day}
           </span>
         </div>
@@ -53,7 +53,9 @@ export default function TransactionCard({
 
       {/* Monto de la Transacción */}
       <div className="text-right shrink-0">
-        <p className={`text-[14px] font-black tabular-nums ${isNegative ? "text-error" : "text-[#005226]"}`}>
+        <p
+          className={`text-[14px] font-black tabular-nums ${isNegative ? "text-error" : "text-[#005226]"}`}
+        >
           {amount}
         </p>
       </div>

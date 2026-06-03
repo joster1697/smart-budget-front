@@ -41,6 +41,55 @@ export const fetchTransactions = createAsyncThunk(
   },
 );
 
+export const createTransaction = createAsyncThunk(
+  "transactions/createTransaction",
+  async (
+    data: {
+      amount: number;
+      type: "income" | "expense" | "transfer";
+      description: string;
+      date: string;
+      category_id?: string;
+      account_id?: string;
+    },
+    { rejectWithValue },
+  ) => {
+    try {
+      const response = await transactionService.createTransaction(data);
+      return (response as any).transaction || response;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  },
+);
+
+export const deleteTransaction = createAsyncThunk(
+  "transactions/deleteTransaction",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await transactionService.deleteTransaction(id);
+      return id;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  },
+);
+
+export const updateTransaction = createAsyncThunk(
+  "transactions/updateTransaction",
+  async (payload: { id: string; data: any }, { rejectWithValue }) => {
+    try {
+      const response = await transactionService.updateTransaction(
+        payload.id,
+        payload.data,
+      );
+      return (response as any).transaction || response;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  },
+);
+
 const transactionsSlice = createSlice({
   name: "transactions",
   initialState,
@@ -70,6 +119,34 @@ const transactionsSlice = createSlice({
         state.loading = false;
       })
       .addCase(fetchTransactions.rejected, (state) => {
+        state.loading = false;
+      })
+      .addCase(createTransaction.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(createTransaction.fulfilled, (state, action) => {
+        state.transactions.unshift(action.payload);
+        state.loading = false;
+      })
+      .addCase(createTransaction.rejected, (state) => {
+        state.loading = false;
+      })
+      .addCase(deleteTransaction.fulfilled, (state, action) => {
+        state.transactions = state.transactions.filter(
+          (t) => t.id !== action.payload,
+        );
+        state.loading = false;
+      })
+      .addCase(deleteTransaction.rejected, (state) => {
+        state.loading = false;
+      })
+      .addCase(updateTransaction.fulfilled, (state, action) => {
+        state.transactions = state.transactions.map((t) =>
+          t.id === action.payload.id ? action.payload : t,
+        );
+        state.loading = false;
+      })
+      .addCase(updateTransaction.rejected, (state) => {
         state.loading = false;
       });
   },
