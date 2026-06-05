@@ -56,6 +56,14 @@ const transactionsSlice = createSlice({
         (t) => t.id !== action.payload,
       );
     },
+    upsertTransaction: (state, action: PayloadAction<Transaction>) => {
+      const index = state.transactions.findIndex((t) => t.id === action.payload.id);
+      if (index !== -1) {
+        state.transactions[index] = action.payload;
+      } else {
+        state.transactions.unshift(action.payload);
+      }
+    },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
@@ -79,6 +87,7 @@ export const {
   setTransactions,
   addTransaction,
   removeTransaction,
+  upsertTransaction,
   setLoading,
 } = transactionsSlice.actions;
 export default transactionsSlice.reducer;

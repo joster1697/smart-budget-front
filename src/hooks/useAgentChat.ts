@@ -8,6 +8,8 @@ import {
   setError,
 } from "../store/slices/chatSlice";
 import { ClientPayload, ServerPayload } from "../types/chat";
+import { fetchAccounts, upsertAccount, removeAccount } from "../store/slices/accountsSlice";
+import { fetchTransactions, upsertTransaction, removeTransaction } from "../store/slices/transactionsSlice";
 
 const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:3000/agent/chat";
 
@@ -74,6 +76,25 @@ export function useAgentChat(initConnection = false): UseAgentChatReturn {
               })
             );
             dispatch(setPendingActions([]));
+
+            if (data.payload.data) {
+              const { accounts, transactions, deletedAccountId, deletedTransactionId } = data.payload.data;
+              if (accounts && accounts.length > 0) {
+                accounts.forEach((acc: any) => dispatch(upsertAccount(acc)));
+              }
+              if (transactions && transactions.length > 0) {
+                transactions.forEach((tx: any) => dispatch(upsertTransaction(tx)));
+              }
+              if (deletedAccountId) {
+                dispatch(removeAccount(deletedAccountId));
+              }
+              if (deletedTransactionId) {
+                dispatch(removeTransaction(deletedTransactionId));
+              }
+            } else {
+              dispatch(fetchAccounts());
+              dispatch(fetchTransactions({ limit: 10 }));
+            }
             break;
           case "ERROR":
             dispatch(setThinking(false));

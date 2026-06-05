@@ -72,7 +72,7 @@ export interface ServerActionsPayload {
 
 export interface ServerResultPayload {
   type: "RESULT";
-  payload: { actionIndex: number; message: string };
+  payload: { actionIndex: number; message: string; data?: any };
 }
 
 export interface ServerErrorPayload {

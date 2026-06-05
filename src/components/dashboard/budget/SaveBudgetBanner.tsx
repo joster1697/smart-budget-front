@@ -1,11 +1,21 @@
-import { use } from "react";
-import { motion } from "framer-motion";
 import { IconDeviceFloppy } from "@tabler/icons-react";
-import { BudgetContext } from "./BudgetContext";
+import { motion } from "framer-motion";
+import { use, useEffect, useRef } from "react";
+import { useOutletContext } from "react-router-dom";
 import Button from "../../ui/Button";
+import { BudgetContext } from "./BudgetContext";
+
+interface OutletContextType {
+  isCollapsed: boolean;
+  setIsCollapsed: (collapsed: boolean) => void;
+}
 
 export default function SaveBudgetBanner() {
   const context = use(BudgetContext);
+  const outletContext = useOutletContext<OutletContextType>() || { isCollapsed: true };
+  const wasVisibleRef = useRef(false);
+  const bannerRef = useRef<HTMLDivElement>(null);
+
   if (!context) return null;
 
   const { state, actions } = context;
@@ -22,14 +32,50 @@ export default function SaveBudgetBanner() {
   const { handleSaveBudget, handleActivateBudget, formatCurrency } = actions;
 
   const isVisible = (!loading && (hasUnsavedChanges || isDraft) && budgetCategories.length > 0);
+
+  // Collapse the bottom navbar automatically only on the initial appearance of the banner
+  useEffect(() => {
+    if (isVisible && !wasVisibleRef.current) {
+      if (!outletContext.isCollapsed && outletContext.setIsCollapsed) {
+        outletContext.setIsCollapsed(true);
+      }
+    }
+    wasVisibleRef.current = isVisible;
+  }, [isVisible, outletContext.isCollapsed, outletContext.setIsCollapsed]);
+
+  // Dynamically measure own height and expose it as a CSS variable on the root document element
+  useEffect(() => {
+    if (isVisible && bannerRef.current) {
+      const updateHeight = () => {
+        const height = bannerRef.current?.getBoundingClientRect().height || 0;
+        document.documentElement.style.setProperty("--banner-height", `${height}px`);
+      };
+
+      updateHeight();
+
+      const observer = new ResizeObserver(updateHeight);
+      observer.observe(bannerRef.current);
+
+      return () => {
+        observer.disconnect();
+        document.documentElement.style.setProperty("--banner-height", "0px");
+      };
+    } else {
+      document.documentElement.style.setProperty("--banner-height", "0px");
+    }
+  }, [isVisible]);
+
   if (!isVisible) return null;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -20, scale: 0.95 }}
+      ref={bannerRef}
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.95 }}
-      className="fixed top-20 lg:top-6 right-4 md:right-6 lg:right-10 left-4 sm:left-auto z-40 bg-surface-container-highest/95 backdrop-blur-md border border-outline-variant/30 px-4 py-3 md:px-6 md:py-4 rounded-2xl shadow-2xl flex flex-col lg:flex-row items-stretch lg:items-center gap-2 lg:gap-6 transition-all duration-300"
+      exit={{ opacity: 0, y: 20, scale: 0.95 }}
+      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+      style={{ bottom: "calc(var(--bottom-spacing, 70px) + 12px)" }}
+      className="fixed left-4 right-4 lg:left-[calc(50%+140px)] lg:-translate-x-1/2 lg:right-auto lg:w-full lg:max-w-3xl z-[55] bg-surface-container-highest/95 backdrop-blur-md border border-outline-variant/30 px-4 py-3 md:px-6 md:py-4 rounded-2xl shadow-2xl flex flex-col lg:flex-row items-stretch lg:items-center gap-2 lg:gap-6"
     >
       <div className="flex flex-row md:flex-col justify-between items-center md:items-start gap-2 mr-0 md:mr-2">
         <span className="text-[10px] md:text-xs text-outline font-bold uppercase tracking-wider capitalize select-none">

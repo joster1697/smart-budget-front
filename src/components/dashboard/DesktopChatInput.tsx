@@ -29,7 +29,10 @@ export default function DesktopChatInput() {
   };
 
   return (
-    <div className="hidden lg:flex fixed bottom-8 left-[calc(50%+140px)] -translate-x-1/2 w-full max-w-3xl z-50">
+    <div 
+      id="desktop-chat-input"
+      className="hidden lg:flex fixed bottom-8 left-[calc(50%+140px)] -translate-x-1/2 w-full max-w-3xl z-50"
+    >
       <div className={`w-full bg-white rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.08)] border border-outline-variant/10 p-1.5 flex items-center gap-3 relative transition-all hover:shadow-[0_10px_40px_rgba(0,0,0,0.12)] ${isThinking ? 'opacity-70 pointer-events-none' : ''}`}>
         <button className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shrink-0 text-on-primary shadow-sm hover:brightness-110 transition-all active:scale-95">
           <IconMicrophone size={24} />

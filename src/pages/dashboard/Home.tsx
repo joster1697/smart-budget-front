@@ -4,7 +4,6 @@ import {
   IconPigMoney,
   IconTrendingUp,
   IconLeaf,
-  IconHistory,
   IconShoppingCart,
   IconCash,
   IconToolsKitchen2,
@@ -18,7 +17,6 @@ import ActivityItem from "../../components/dashboard/ActivityItem";
 import PaymentCard from "../../components/dashboard/PaymentCard";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useNavigate } from "react-router-dom";
-import { div, style } from "framer-motion/client";
 import { fetchTransactions } from "../../store/slices/transactionsSlice";
 
 export default function Home() {

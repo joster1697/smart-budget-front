@@ -76,24 +76,11 @@ export default function LinkedCreditCards({ account }: LinkedCreditCardsProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-[18px] font-medium text-[#1B252D]">
-          Tarjetas Ligadas
-        </h3>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="md:hidden w-8 h-8 rounded-full bg-[#f0f2f1] border-2 border-primary-fixed hover:bg-primary-fixed active:scale-95 flex items-center justify-center text-[#1B252D] cursor-pointer transition-all duration-200"
-          aria-label="Vincular Tarjeta"
-        >
-          <PlusIcon size={18} />
-        </button>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {linkedCards.map((card) => (
           <div
             key={card.id}
-            className="flex items-center justify-between p-3 sm:p-4 bg-[#fbfdfc] border-2 border-outline-variant/30 rounded-xl gap-2 hover:border-primary-fixed cursor-pointer transition-all duration-300 hover:shadow-md"
+            className="flex items-center justify-between p-3.5 sm:p-4 bg-[#fbfdfc] border border-outline-variant/20 rounded-2xl rounded-tl-sm gap-2 hover:border-primary-fixed cursor-pointer transition-all duration-300 hover:shadow-md shadow-sm"
           >
             <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
               <div className="w-10 sm:w-12 h-10 sm:h-12 bg-[#f0f2f1] rounded-lg flex items-center justify-center text-[#424943] shrink-0">
@@ -131,7 +118,7 @@ export default function LinkedCreditCards({ account }: LinkedCreditCardsProps) {
         {/* Botón de Vincular Tarjeta (Dasheado) */}
         <div
           onClick={() => setIsModalOpen(true)}
-          className="flex group items-center justify-between p-3 sm:p-4 bg-[#fbfdfc]/50 border-2 border-dashed border-outline-variant/50 rounded-xl gap-2 hover:border-primary-fixed hover:bg-[#fbfdfc] cursor-pointer transition-all duration-300 hover:shadow-md"
+          className="flex group items-center justify-between p-3.5 sm:p-4 bg-[#fbfdfc]/30 border border-dashed border-outline-variant/40 rounded-2xl rounded-tl-sm gap-2 hover:border-primary-fixed hover:bg-[#fbfdfc]/60 cursor-pointer transition-all duration-300 hover:shadow-md shadow-sm"
         >
           <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
             <div className="w-10 sm:w-12 h-10 sm:h-12 bg-[#f0f2f1]/50 group-hover:bg-[#f0f2f1] rounded-lg flex items-center justify-center text-[#727972] group-hover:text-[#1B252D] shrink-0 transition-all duration-300">

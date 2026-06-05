@@ -22,6 +22,29 @@ const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'CRC' }).format(amount);
 };
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.18,
+    },
+  },
+} as const;
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 80,
+      damping: 12,
+    },
+  },
+} as const;
+
 export default function Budget() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [budget, setBudget] = useState<BudgetStatus | null>(null);
@@ -300,70 +323,57 @@ export default function Budget() {
 
   return (
     <BudgetContext value={contextValue}>
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="flex flex-col gap-6"
-      >
-        <AIChatBubble
-          layoutId="agent-greeting"
-          message={getChatMessage()}
-        />
+      <section className="flex flex-col gap-4 sm:gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 80, damping: 12 }}
+        >
+          <AIChatBubble
+            layoutId="agent-greeting"
+            title="Presupuesto Mensual"
+            message={getChatMessage()}
+            actions={
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-4 w-full items-start sm:items-center">
+                <div className="flex flex-row gap-3 flex-wrap items-center">
+                  {/* Selector de Mes */}
+                  <div className="flex items-center gap-2 bg-surface-container-lowest px-4 py-1.5 rounded-full border border-outline-variant/30 shadow-sm">
+                    <button onClick={prevMonth} className="p-1 hover:bg-surface-container rounded-full transition-colors text-on-surface cursor-pointer border-none bg-transparent">
+                      <IconChevronLeft size={16} />
+                    </button>
+                    <span className="font-bold text-[#005226] min-w-[120px] text-center capitalize text-sm select-none">
+                      {monthYearStr}
+                    </span>
+                    <button onClick={nextMonth} className="p-1 hover:bg-surface-container rounded-full transition-colors text-on-surface cursor-pointer border-none bg-transparent">
+                      <IconChevronRight size={16} />
+                    </button>
+                  </div>
 
-        <div className="flex flex-row sm:justify-between gap-4 mt-2 mb-1 flex-wrap">
-          {/* Selector de Mes */}
-          <div className="flex items-center gap-2 bg-surface-container-lowest px-4 py-1.5 rounded-full border border-outline-variant/30 shadow-sm">
-            <button onClick={prevMonth} className="p-1 hover:bg-surface-container rounded-full transition-colors text-on-surface cursor-pointer border-none bg-transparent">
-              <IconChevronLeft size={16} />
-            </button>
-            <span className="font-bold text-[#005226] min-w-[120px] text-center capitalize text-sm select-none">
-              {monthYearStr}
-            </span>
-            <button onClick={nextMonth} className="p-1 hover:bg-surface-container rounded-full transition-colors text-on-surface cursor-pointer border-none bg-transparent">
-              <IconChevronRight size={16} />
-            </button>
-          </div>
+                  {/* Badges de Estado */}
+                  <div className="flex items-center gap-2 flex-wrap select-none">
+                    {budget && (
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isDraft ? 'bg-secondary-container text-on-secondary-container' : 'bg-[#008f43]/15 text-[#008f43]'
+                        }`}>
+                        {isDraft ? 'Borrador' : 'Activo'}
+                      </span>
+                    )}
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${isCurrentMonth
+                      ? 'bg-[#005226]/10 text-[#005226] border-[#005226]/30'
+                      : isPastMonth
+                        ? 'bg-surface-container text-outline border-outline-variant/30'
+                        : 'bg-blue-500/10 text-blue-700 border-blue-500/20'
+                      }`}>
+                      {isCurrentMonth ? 'Mes Actual' : isPastMonth ? 'Histórico' : 'Planificación'}
+                    </span>
+                  </div>
+                </div>
 
-          {/* Badges de Estado */}
-          <div className="flex items-center gap-2 flex-wrap select-none">
-            {budget && (
-              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isDraft ? 'bg-secondary-container text-on-secondary-container' : 'bg-[#008f43]/15 text-[#008f43]'
-                }`}>
-                {isDraft ? 'Borrador' : 'Activo'}
-              </span>
-            )}
-            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${isCurrentMonth
-              ? 'bg-[#005226]/10 text-[#005226] border-[#005226]/30'
-              : isPastMonth
-                ? 'bg-surface-container text-outline border-outline-variant/30'
-                : 'bg-blue-500/10 text-blue-700 border-blue-500/20'
-              }`}>
-              {isCurrentMonth ? 'Mes Actual' : isPastMonth ? 'Histórico' : 'Planificación'}
-            </span>
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="flex justify-center p-10">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#005226]"></div>
-          </div>
-        ) : error ? (
-          <div className="bg-error-container text-on-error-container p-4 rounded-xl">{error}</div>
-        ) : (
-          <>
-            {/* Summary Card */}
-            <BudgetSummary />
-
-            {/* Categories Section */}
-            <div>
-              <div className="flex flex-col justify-between sm:flex-row sm:items-center gap-2 mb-4">
-                <h3 className="text-xl font-bold text-on-surface font-manrope">Categorías de Presupuesto</h3>
-                <div className="flex items-center gap-3">
+                {/* Botones de Gestión de Presupuesto */}
+                <div className="flex items-center gap-2 flex-wrap select-none w-full sm:w-auto justify-end sm:justify-start">
                   {isActive && (
                     <button
                       onClick={handleToggleEditing}
-                      className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all duration-300 shadow-sm cursor-pointer ${isEditing
+                      className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all duration-300 shadow-sm cursor-pointer border-none ${isEditing
                         ? "bg-[#005226] text-white hover:bg-[#003d1c]"
                         : "bg-surface-container text-outline hover:text-on-surface border border-outline-variant/30 hover:border-outline-variant"
                         }`}
@@ -375,12 +385,44 @@ export default function Budget() {
                   {canEdit && (
                     <button
                       onClick={() => setIsCategoryModalOpen(true)}
-                      className="flex items-center gap-1 text-sm font-bold text-[#005226] hover:bg-primary-container px-3 py-1.5 rounded-full transition-colors border-none bg-transparent cursor-pointer"
+                      className="flex items-center gap-1 text-xs font-bold text-[#005226] bg-[#005226]/10 hover:bg-[#005226]/20 px-3 py-1.5 rounded-full transition-colors border-none cursor-pointer"
                     >
-                      <IconPlus size={16} /> Añadir Categoría
+                      <IconPlus size={14} /> Añadir Categoría
                     </button>
                   )}
                 </div>
+              </div>
+            }
+          />
+        </motion.div>
+
+        {loading ? (
+          <motion.div variants={itemVariants} className="flex justify-center p-10">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#005226]"></div>
+          </motion.div>
+        ) : error ? (
+          <motion.div variants={itemVariants} className="bg-error-container text-on-error-container p-4 rounded-xl">{error}</motion.div>
+        ) : (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="flex flex-col gap-4 sm:gap-6"
+          >
+            {/* Summary Section */}
+            <motion.div variants={itemVariants} className="flex flex-col gap-2">
+              <div className="flex gap-2 items-center text-[10px] sm:text-xs text-outline font-black uppercase tracking-widest pl-2 select-none">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#008f43]" />
+                <span>Resumen de Ingresos</span>
+              </div>
+              <BudgetSummary />
+            </motion.div>
+
+            {/* Categories Section */}
+            <motion.div variants={itemVariants} className="flex flex-col gap-2">
+              <div className="flex gap-2 items-center text-[10px] sm:text-xs text-outline font-black uppercase tracking-widest pl-2 select-none">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#008f43]" />
+                <span>Desglose por Categorías</span>
               </div>
 
               {!budget ? (
@@ -393,17 +435,21 @@ export default function Budget() {
                   )}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                <motion.div
+                  variants={containerVariants}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4"
+                >
                   {displayCategories.map((cat) => (
-                    <BudgetCategoryCard
-                      key={cat.id}
-                      category={cat}
-                    />
+                    <motion.div key={cat.id} variants={itemVariants}>
+                      <BudgetCategoryCard
+                        category={cat}
+                      />
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               )}
-            </div>
-          </>
+            </motion.div>
+          </motion.div>
         )}
 
         {/* Edit Budget Modal */}
@@ -420,7 +466,7 @@ export default function Budget() {
         <AnimatePresence>
           <SaveBudgetBanner />
         </AnimatePresence>
-      </motion.section>
+      </section>
     </BudgetContext>
   );
 }
