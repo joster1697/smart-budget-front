@@ -553,6 +553,9 @@ export default function Transactions() {
                   <option value="">Ninguna</option>
                   {categories
                     .filter((cat) => {
+                      // Si la categoría no tiene la propiedad 'type', la mostramos por defecto
+                      if (!cat.type) return true;
+                      // Si sí tiene 'type', aplicamos el filtro normal
                       if (type === "expense") return cat.type === "EXPENSE";
                       if (type === "income") return cat.type === "INCOME";
                       return true;
