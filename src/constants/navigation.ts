@@ -11,7 +11,7 @@ export const NAV_ITEMS = [
   {
     to: "/dashboard/home",
     icon: IconLayoutDashboard,
-    sidebarLabel: "Mastery",
+    sidebarLabel: "Home",
     mobileLabel: "Resumen de mi cuenta",
     greeting:
       "¡Hola de nuevo, Jorge! He preparado el resumen de tu arquitectura patrimonial hoy.",
