@@ -23,6 +23,7 @@ import {
 } from "@tabler/icons-react";
 import ActivityItem from "../../components/dashboard/ActivityItem";
 import TransactionCard from "../../components/dashboard/TransactionCard";
+import { formatDueDate } from "./Home";
 
 export default function Transactions() {
   const { transactions, loading } = useAppSelector(
@@ -420,6 +421,7 @@ export default function Transactions() {
                     month={getMonth(transaction.date)}
                     amount={`${prefix}${formatTxCurrency(transaction.amount)}`}
                     isNegative={!isIncome}
+                    subtitle={formatDueDate(transaction.date)}
                   />
                 );
               })
@@ -500,7 +502,7 @@ export default function Transactions() {
               {/* Fecha */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-gray-600">
-                  Fecha y Hora *
+                  Fecha y Hora (Formato 24hrs) *
                 </label>
                 <input
                   type="datetime-local"

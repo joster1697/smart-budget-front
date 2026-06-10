@@ -7,6 +7,7 @@ interface TransactionCardProps {
   amount: string;
   icon?: ReactNode;
   isNegative?: boolean;
+  subtitle?: string;
 }
 
 export default function TransactionCard({
@@ -16,6 +17,7 @@ export default function TransactionCard({
   amount,
   icon,
   isNegative = true,
+  subtitle,
 }: TransactionCardProps) {
   return (
     <div className="flex items-center gap-4 bg-surface p-3 rounded-xl border border-outline-variant/10 hover:border-primary/30 transition-all cursor-pointer group">
@@ -47,7 +49,7 @@ export default function TransactionCard({
           {title}
         </p>
         <p className="text-[11px] text-on-surface-variant font-medium">
-          Transacción
+          {subtitle || "Transacción"}
         </p>
       </div>
 
