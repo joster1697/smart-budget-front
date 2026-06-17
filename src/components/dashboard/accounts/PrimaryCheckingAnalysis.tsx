@@ -1,4 +1,4 @@
-import { IconChartLine } from "@tabler/icons-react";
+// Trajectory Chart analysis component
 
 interface PrimaryCheckingAnalysisProps {
   account?: any;

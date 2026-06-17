@@ -10,6 +10,7 @@ import Chat from "../pages/dashboard/Chat";
 import PrivateRoute from "./PrivateRoute";
 import PublicRoute from "./PublicRoute";
 import Budget from "../pages/dashboard/Budget";
+import DebtAnalyzer from "../pages/dashboard/DebtAnalyzer";
 
 const AppRoutes = () => {
   return (
@@ -33,6 +34,7 @@ const AppRoutes = () => {
           <Route path="reports" element={<Reports />} />
           <Route path="chat" element={<Chat />} />
           <Route path="budget" element={<Budget />} />
+          <Route path="debts" element={<DebtAnalyzer />} />
         </Route>
       </Route>
     </Routes>

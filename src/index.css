@@ -166,3 +166,34 @@ input[type="range"].budget-slider::-moz-range-thumb {
   border: 2px solid white;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+/* Custom Scrollbars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 82, 38, 0.15); /* Light primary theme tint */
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 82, 38, 0.3);
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 82, 38, 0.15) transparent;
+}
+
+/* No Scrollbar Utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

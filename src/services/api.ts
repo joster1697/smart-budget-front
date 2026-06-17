@@ -78,14 +78,14 @@ async function request<TResponse, TBody = unknown>({
     const config: RequestInit = {
       method,
       headers: {
-        "Content-Type": "application/json",
+        ...(body instanceof FormData ? {} : { "Content-Type": "application/json" }),
         ...authHeader,
         ...headers,
       },
     };
 
     if (body !== undefined) {
-      config.body = JSON.stringify(body);
+      config.body = body instanceof FormData ? body : JSON.stringify(body);
     }
 
     return fetch(`${BASE_URL}${endpoint}`, config);
