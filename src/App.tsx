@@ -2,7 +2,7 @@ import "./App.css";
 import { useEffect } from "react";
 import AppRoutes from "./routes/AppRoutes";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
-import { initializeAuth, logout } from "./store/slices/authSlice";
+import { initializeAuth, logout, updateToken } from "./store/slices/authSlice";
 // import Sidebar from "./components/menus/Sidebar.jsx";
 // import Footer from "./components/menus/Footer.jsx";
 
@@ -16,10 +16,24 @@ function App() {
     const handleLogoutEvent = () => {
       dispatch(logout());
     };
+
+    const handleRefreshEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<{ token: string; refreshToken?: string }>;
+      const { token: newToken, refreshToken: newRefreshToken } = customEvent.detail;
+      // Actualizamos el Redux store
+      dispatch(
+        updateToken({
+          token: newToken,
+          refreshToken: newRefreshToken,
+        })
+      );
+    };
     
     window.addEventListener("auth:logout", handleLogoutEvent);
+    window.addEventListener("auth:refresh", handleRefreshEvent);
     return () => {
       window.removeEventListener("auth:logout", handleLogoutEvent);
+      window.removeEventListener("auth:refresh", handleRefreshEvent);
     };
   }, [dispatch]);
 

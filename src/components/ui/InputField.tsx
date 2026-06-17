@@ -1,4 +1,4 @@
-import { forwardRef, InputHTMLAttributes, ReactNode, useState } from "react";
+import { InputHTMLAttributes, ReactNode, useState, Ref } from "react";
 import { EyeIcon, EyeOffIcon, IconLockFilled } from "./Icons";
 
 interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -6,12 +6,10 @@ interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
+  ref?: Ref<HTMLInputElement>;
 }
 
-/**
- * Usa forwardRef para que React Hook Form pueda registrar el ref del input nativo.
- */
-const InputField = forwardRef<HTMLInputElement, InputFieldProps>(function InputField({
+export default function InputField({
   label,
   error,
   leftIcon,
@@ -21,8 +19,9 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(function InputF
   id,
   onFocus,
   onBlur,
+  ref,
   ...props
-}, ref) {
+}: InputFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -97,6 +96,4 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(function InputF
       )}
     </div>
   );
-});
-
-export default InputField;
+}

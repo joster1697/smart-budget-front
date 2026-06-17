@@ -89,6 +89,7 @@ export default function DashboardNavbar({ isCollapsed, setIsCollapsed }: Dashboa
 
   return (
     <nav
+      id="mobile-navbar"
       className={`fixed bottom-0 left-0 w-full z-50 bg-surface-container-lowest rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] px-5 pb-8 pt-3 flex flex-col gap-4 transition-all duration-500 ease-in-out ${isCollapsed ? "translate-y-[calc(100%-70px)]" : "translate-y-0"
         }`}
     >

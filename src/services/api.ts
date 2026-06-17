@@ -51,6 +51,7 @@ async function refreshAuthToken(): Promise<string | null> {
       if (newRefreshToken) {
         localStorage.setItem("refreshToken", newRefreshToken);
       }
+      window.dispatchEvent(new CustomEvent("auth:refresh", { detail: { token: newAccessToken, refreshToken: newRefreshToken } }));
       return newAccessToken;
     })
     .catch(() => {

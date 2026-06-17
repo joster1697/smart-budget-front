@@ -61,30 +61,30 @@ export default function AccountDetails({ account }: { account: any }) {
       currency: "CRC",
     }).format(value);
 
-  console.log("DEBUG: selected account is", account);
-
   const linkedCreditCards = accounts.filter(
     (acc) => acc.type === "credit" && acc.account_linked === account.id
   );
 
+  // El balance de las tarjetas en la base de datos es negativo cuando hay deuda, 
+  // por lo que usamos Math.abs para obtener el valor de la deuda en positivo.
   const creditCardsPending = linkedCreditCards.reduce(
-    (sum, card) => sum + Number(card.balance),
+    (sum, card) => sum + Math.abs(Number(card.balance)),
     0
   );
 
-  const pendingAmount = Number(account.reserved_balance ?? 0) + creditCardsPending;
+  const pendingAmount = Number(account.reserved_balance ?? 0);
 
   const virtualBalance = Number(account.balance - pendingAmount);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-2">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-1">
       {/* Columna Izquierda: Account Details */}
-      <div className="flex flex-col">
-        <h2 className="text-[22px] font-bold text-[#1B252D]">
+      <div className="flex flex-col bg-surface-container-low border border-outline-variant/20 rounded-2xl rounded-tl-sm p-6 shadow-sm">
+        <h3 className="text-[20px] font-bold text-[#1B252D] border-b pb-2 border-outline-variant/10">
           Account Details
-        </h2>
+        </h3>
 
-        <label className="text-[13px] text-[#424943] mt-6 font-medium">
+        <label className="text-[13px] text-[#424943] mt-5 font-medium">
           Account Name
         </label>
 
@@ -96,16 +96,16 @@ export default function AccountDetails({ account }: { account: any }) {
           </span>
         </div>
 
-        <div className="flex items-center gap-3 mt-3 max-w-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mt-3 max-w-sm w-full">
           <input
             type="text"
             value={accountName}
             onChange={(e) => setAccountName(e.target.value)}
-            className="flex-1 border border-outline-variant/40 rounded-lg p-3 bg-[#fbfdfc] text-[#1B252D] font-medium focus:outline-none focus:border-primary-fixed hover:border-primary-fixed cursor-pointer transition-all duration-300 hover:shadow-md"
+            className="w-full border border-outline-variant/40 rounded-lg p-3 bg-[#fbfdfc] text-[#1B252D] font-medium focus:outline-none focus:border-primary-fixed hover:border-primary-fixed cursor-pointer transition-all duration-300 hover:shadow-md"
           />
           <button
             onClick={handleSaveName}
-            className="bg-[#e4e6e5]/60 transition-colors px-6 py-3 rounded-lg font-bold text-[#1B252D] text-[14px]  cursor-pointer border-2 border-primary-fixed hover:bg-primary-fixed"
+            className="bg-primary-container hover:bg-[#8ee9ac] active:scale-95 text-on-primary-container transition-all duration-200 px-6 py-3 rounded-lg font-bold text-[14px] cursor-pointer w-full sm:w-auto shrink-0"
           >
             Save
           </button>
@@ -118,22 +118,15 @@ export default function AccountDetails({ account }: { account: any }) {
       </div>
 
       {/* Columna Derecha: Balance Breakdown */}
-      <div className="bg-surface-container-low border border-outline-variant/20 rounded-xl p-6 flex flex-col">
-        <h3 className="text-[20px] font-bold text-[#1B252D]">
+      <div className="bg-surface-container-low border border-outline-variant/20 rounded-2xl rounded-tl-sm p-6 flex flex-col shadow-sm">
+        <h3 className="text-[20px] font-bold text-[#1B252D] border-b pb-2 border-outline-variant/10">
           Balance Breakdown
         </h3>
 
-        <div className="flex justify-between items-center mt-6">
+        <div className="flex justify-between items-center mt-5">
           <span className="text-[#424943] text-[14px]">Real Balance</span>
           <span className="text-[#1B252D] font-medium text-[15px] tabular-nums">
             {formatCurrency(account.balance)}
-          </span>
-        </div>
-
-        <div className="flex justify-between items-center mt-3">
-          <span className="text-[#ba1a1a] text-[14px]">Pending Amounts</span>
-          <span className="text-[#ba1a1a] font-medium text-[15px] tabular-nums">
-            -{formatCurrency(Number(account.reserved_balance ?? 0))}
           </span>
         </div>
 
@@ -160,17 +153,17 @@ export default function AccountDetails({ account }: { account: any }) {
         <span className="text-[#424943] text-[12px] mt-8 font-medium">
           Manual Adjustment
         </span>
-        <div className="flex items-center gap-3 mt-2 max-w-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mt-2 max-w-sm w-full">
           <input
             type="number"
             value={adjustment}
             onChange={(e) => setAdjustment(e.target.value)}
             placeholder={formatCurrency(0)}
-            className="flex-1 border border-outline-variant/40 rounded-lg p-2.5 bg-white text-[#1B252D] focus:outline-none focus:border-[#006b3a] transition-colors"
+            className="w-full border border-outline-variant/40 rounded-lg p-2.5 bg-white text-[#1B252D] focus:outline-none focus:border-[#006b3a] transition-colors"
           />
           <button
             onClick={handleApplyAdjustment}
-            className="bg-[#e4e6e5]/60 transition-colors px-6 py-2.5 rounded-lg font-bold text-[#1B252D] text-[13px] cursor-pointer border-2 border-primary-fixed hover:bg-primary-fixed"
+            className="bg-primary-container hover:bg-[#8ee9ac] active:scale-95 text-on-primary-container transition-all duration-200 px-6 py-2.5 rounded-lg font-bold text-[13px] cursor-pointer w-full sm:w-auto shrink-0"
           >
             Apply
           </button>

@@ -30,6 +30,14 @@ const accountsSlice = createSlice({
     removeAccount: (state, action: PayloadAction<string>) => {
       state.accounts = state.accounts.filter((a) => a.id !== action.payload);
     },
+    upsertAccount: (state, action: PayloadAction<Account>) => {
+      const index = state.accounts.findIndex((a) => a.id === action.payload.id);
+      if (index !== -1) {
+        state.accounts[index] = action.payload;
+      } else {
+        state.accounts.push(action.payload);
+      }
+    },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
@@ -195,6 +203,7 @@ export const {
   addAccount,
   updateAccount,
   removeAccount,
+  upsertAccount,
   setLoading,
 } = accountsSlice.actions;
 export default accountsSlice.reducer;

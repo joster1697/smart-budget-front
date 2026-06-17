@@ -1,4 +1,3 @@
-import { string } from "zod";
 import api from "./api";
 
 export interface Account {
