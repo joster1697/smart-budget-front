@@ -4,8 +4,10 @@ import { IconX } from "@tabler/icons-react";
 import { BudgetContext } from "./BudgetContext";
 import InputField from "../../ui/InputField";
 import Button from "../../ui/Button";
+import { useTranslation } from "react-i18next";
 
 export default function CategoryFormModal() {
+  const { t } = useTranslation();
   const context = use(BudgetContext);
   if (!context) return null;
 
@@ -29,26 +31,26 @@ export default function CategoryFormModal() {
         className="bg-surface-container-lowest w-full max-w-sm rounded-[28px] overflow-hidden shadow-xl"
       >
         <div className="p-6 border-b border-outline-variant/20 flex justify-between items-center">
-          <h3 className="text-xl font-bold text-on-surface">Nueva Categoría</h3>
+          <h3 className="text-xl font-bold text-on-surface">{t("budget.newCategory")}</h3>
           <button onClick={() => setIsCategoryModalOpen(false)} className="text-outline hover:text-on-surface cursor-pointer border-none bg-transparent">
             <IconX size={24} />
           </button>
         </div>
         <div className="p-6">
           <InputField
-            label="Nombre de la Categoría"
+            label={t("budget.categoryName")}
             type="text"
             value={newCategoryName}
             onChange={(e) => setNewCategoryName(e.target.value)}
-            placeholder="Ej. Compras"
+            placeholder={t("budget.categoryPlaceholder")}
           />
         </div>
         <div className="p-6 border-t border-outline-variant/20 flex justify-end gap-3 bg-surface-container/30">
           <Button variant="secondary" onClick={() => setIsCategoryModalOpen(false)} disabled={loading}>
-            Cancelar
+            {t("common.cancel")}
           </Button>
           <Button variant="primary" onClick={handleCreateCategory} disabled={!newCategoryName || loading}>
-            Crear
+            {t("accounts.create")}
           </Button>
         </div>
       </motion.div>

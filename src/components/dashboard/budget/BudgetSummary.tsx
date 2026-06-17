@@ -7,7 +7,12 @@ export default function BudgetSummary() {
   if (!context) return null;
 
   const { state, actions } = context;
-  const { plannedIncome, totalAllocatedInForm, remainingToAllocate, isEditing } = state;
+  const {
+    plannedIncome,
+    totalAllocatedInForm,
+    remainingToAllocate,
+    isEditing,
+  } = state;
   const { setIsModalOpen, formatCurrency } = actions;
 
   return (
@@ -31,14 +36,20 @@ export default function BudgetSummary() {
           </span>
         </div>
         <div className="flex flex-col flex-1 min-w-[120px]">
-          <span className="text-outline text-[10px] sm:text-sm font-medium">Asignado</span>
+          <span className="text-outline text-[10px] sm:text-sm font-medium">
+            Asignado
+          </span>
           <span className="text-sm sm:text-xl md:text-2xl font-black text-on-surface whitespace-nowrap">
             {formatCurrency(totalAllocatedInForm)}
           </span>
         </div>
         <div className="flex flex-col flex-1 min-w-[120px]">
-          <span className="text-outline text-[10px] sm:text-sm font-medium">Disponible</span>
-          <span className={`text-sm sm:text-xl md:text-2xl font-black whitespace-nowrap ${remainingToAllocate < 0 ? 'text-error' : 'text-[#008f43]'}`}>
+          <span className="text-outline text-[10px] sm:text-sm font-medium">
+            Disponible
+          </span>
+          <span
+            className={`text-sm sm:text-xl md:text-2xl font-black whitespace-nowrap ${remainingToAllocate < 0 ? "text-error" : "text-[#008f43]"}`}
+          >
             {formatCurrency(remainingToAllocate)}
           </span>
         </div>

@@ -17,9 +17,12 @@ import CategoryFormModal from "../../components/dashboard/budget/CategoryFormMod
 import SaveBudgetBanner from "../../components/dashboard/budget/SaveBudgetBanner";
 import Button from "../../components/ui/Button";
 import { BudgetContext } from "../../components/dashboard/budget/BudgetContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n";
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'CRC' }).format(amount);
+  const locale = i18n.language.startsWith("es") ? "es-CR" : "en-US";
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: 'CRC' }).format(amount);
 };
 
 const containerVariants = {
@@ -46,6 +49,7 @@ const itemVariants = {
 } as const;
 
 export default function Budget() {
+  const { t } = useTranslation();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [budget, setBudget] = useState<BudgetStatus | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -63,14 +67,15 @@ export default function Budget() {
   // Category creation state
   const [newCategoryName, setNewCategoryName] = useState("");
 
-  const monthYearStr = currentDate.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+  const localeStr = i18n.language.startsWith("es") ? "es-ES" : "en-US";
+  const monthYearStr = currentDate.toLocaleDateString(localeStr, { month: "long", year: "numeric" });
   const periodStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
 
   const today = new Date();
   const isCurrentMonth = currentDate.getFullYear() === today.getFullYear() && currentDate.getMonth() === today.getMonth();
   const isPastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1) <= new Date(today.getFullYear(), today.getMonth(), 1);
 
-  const rawMonthName = currentDate.toLocaleDateString("es-ES", { month: "long" }).split(" ")[0];
+  const rawMonthName = currentDate.toLocaleDateString(localeStr, { month: "long" }).split(" ")[0];
   const capitalizedMonth = rawMonthName.charAt(0).toUpperCase() + rawMonthName.slice(1);
 
   const fetchBudget = async () => {
@@ -258,24 +263,24 @@ export default function Budget() {
 
   const getChatMessage = () => {
     if (!budget) {
-      return `Hola, no he encontrado un presupuesto configurado para ${capitalizedMonth}. ¿Te gustaría crear uno nuevo para empezar?`;
+      return t("budget.greetings.noBudget", { month: capitalizedMonth });
     }
 
     if (budget.status === 'DRAFT') {
       if (remainingToAllocate > 0) {
-        return `Hola, estás editando el borrador de ${capitalizedMonth}. Aún tienes ${formatCurrency(remainingToAllocate)} disponibles para asignar a tus categorías.`;
+        return t("budget.greetings.draftRemaining", { month: capitalizedMonth, amount: formatCurrency(remainingToAllocate) });
       } else if (remainingToAllocate < 0) {
-        return `Hola, estás editando el borrador de ${capitalizedMonth}. Has sobreasignado ${formatCurrency(Math.abs(remainingToAllocate))}. Por favor, ajusta los límites.`;
+        return t("budget.greetings.draftOverallocated", { month: capitalizedMonth, amount: formatCurrency(Math.abs(remainingToAllocate)) });
       }
-      return `Hola, el borrador de tu presupuesto de ${capitalizedMonth} está completamente asignado. ¡Ya puedes activarlo para este mes!`;
+      return t("budget.greetings.draftFull", { month: capitalizedMonth });
     }
 
     if (remainingToAllocate > 0) {
-      return `Hola, aquí tienes el resumen de tu presupuesto activo de ${capitalizedMonth}. Aún tienes ${formatCurrency(remainingToAllocate)} disponibles para asignar.`;
+      return t("budget.greetings.activeRemaining", { month: capitalizedMonth, amount: formatCurrency(remainingToAllocate) });
     } else if (remainingToAllocate < 0) {
-      return `Hola, tu presupuesto de ${capitalizedMonth} está activo, pero tienes una sobreasignación de ${formatCurrency(Math.abs(remainingToAllocate))}.`;
+      return t("budget.greetings.activeOverallocated", { month: capitalizedMonth, amount: formatCurrency(Math.abs(remainingToAllocate)) });
     }
-    return `Hola, aquí tienes el resumen de tu presupuesto activo de ${capitalizedMonth}. Todo tu capital disponible está asignado a tus categorías de forma balanceada.`;
+    return t("budget.greetings.activeFull", { month: capitalizedMonth });
   };
 
   const contextValue = {
@@ -331,7 +336,7 @@ export default function Budget() {
         >
           <AIChatBubble
             layoutId="agent-greeting"
-            title="Presupuesto Mensual"
+            title={t("budget.title")}
             message={getChatMessage()}
             actions={
               <div className="flex flex-col sm:flex-row sm:justify-between gap-4 w-full items-start sm:items-center">
@@ -354,7 +359,7 @@ export default function Budget() {
                     {budget && (
                       <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isDraft ? 'bg-secondary-container text-on-secondary-container' : 'bg-[#008f43]/15 text-[#008f43]'
                         }`}>
-                        {isDraft ? 'Borrador' : 'Activo'}
+                        {isDraft ? t("budget.draft") : t("budget.active")}
                       </span>
                     )}
                     <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${isCurrentMonth
@@ -363,7 +368,7 @@ export default function Budget() {
                         ? 'bg-surface-container text-outline border-outline-variant/30'
                         : 'bg-blue-500/10 text-blue-700 border-blue-500/20'
                       }`}>
-                      {isCurrentMonth ? 'Mes Actual' : isPastMonth ? 'Histórico' : 'Planificación'}
+                      {isCurrentMonth ? t("budget.currentMonth") : isPastMonth ? t("budget.history") : t("budget.planning")}
                     </span>
                   </div>
                 </div>
@@ -379,7 +384,7 @@ export default function Budget() {
                         }`}
                     >
                       {isEditing ? <IconLockOpen size={14} /> : <IconLock size={14} />}
-                      <span>{isEditing ? "Modo Ajuste" : "Ajustar Límites"}</span>
+                      <span>{isEditing ? t("budget.adjustmentMode") : t("budget.adjustLimits")}</span>
                     </button>
                   )}
                   {canEdit && (
@@ -387,7 +392,7 @@ export default function Budget() {
                       onClick={() => setIsCategoryModalOpen(true)}
                       className="flex items-center gap-1 text-xs font-bold text-[#005226] bg-[#005226]/10 hover:bg-[#005226]/20 px-3 py-1.5 rounded-full transition-colors border-none cursor-pointer"
                     >
-                      <IconPlus size={14} /> Añadir Categoría
+                      <IconPlus size={14} /> {t("budget.addCategory")}
                     </button>
                   )}
                 </div>
@@ -413,7 +418,7 @@ export default function Budget() {
             <motion.div variants={itemVariants} className="flex flex-col gap-2">
               <div className="flex gap-2 items-center text-[10px] sm:text-xs text-outline font-black uppercase tracking-widest pl-2 select-none">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#008f43]" />
-                <span>Resumen de Ingresos</span>
+                <span>{t("budget.incomeSummary")}</span>
               </div>
               <BudgetSummary />
             </motion.div>
@@ -422,15 +427,15 @@ export default function Budget() {
             <motion.div variants={itemVariants} className="flex flex-col gap-2">
               <div className="flex gap-2 items-center text-[10px] sm:text-xs text-outline font-black uppercase tracking-widest pl-2 select-none">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#008f43]" />
-                <span>Desglose por Categorías</span>
+                <span>{t("budget.categoryBreakdown")}</span>
               </div>
 
               {!budget ? (
                 <div className="text-center py-10 bg-surface-container-lowest rounded-2xl border border-outline-variant/20">
-                  <p className="text-outline mb-4">No hay presupuesto configurado para este mes.</p>
+                  <p className="text-outline mb-4">{t("budget.noBudget")}</p>
                   {currentDate >= new Date(new Date().getFullYear(), new Date().getMonth(), 1) && (
                     <Button variant="primary" onClick={() => setIsModalOpen(true)}>
-                      Crear Presupuesto
+                      {t("budget.createBudget")}
                     </Button>
                   )}
                 </div>

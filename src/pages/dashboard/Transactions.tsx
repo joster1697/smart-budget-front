@@ -10,6 +10,8 @@ import { fetchAccounts } from "../../store/slices/accountsSlice";
 import { categoryService } from "../../services/categoryService";
 import AIChatBuble from "../../components/dashboard/AIChatBubble";
 import Button from "../../components/ui/Button";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n";
 import {
   IconPlus,
   IconCash,
@@ -25,6 +27,7 @@ import TransactionCard from "../../components/dashboard/TransactionCard";
 import { formatDueDate } from "./Home";
 
 export default function Transactions() {
+  const { t } = useTranslation();
   const { transactions, loading } = useAppSelector(
     (state) => state.transactions,
   );
@@ -112,7 +115,7 @@ export default function Transactions() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!description || !amount || !accountId) {
-      alert("Por favor, completa los campos requeridos.");
+      alert(t("transactions.alertFields"));
       return;
     }
 
@@ -149,17 +152,19 @@ export default function Transactions() {
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error saving transaction:", error);
-      alert("Hubo un error al guardar la transacción.");
+      alert(t("transactions.errorSave"));
     } finally {
       setSubmitting(false);
     }
   };
 
-  const formatTxCurrency = (value: number) =>
-    new Intl.NumberFormat("es-CR", {
+  const formatTxCurrency = (value: number) => {
+    const locale = i18n.language.startsWith("es") ? "es-CR" : "en-US";
+    return new Intl.NumberFormat(locale, {
       style: "currency",
       currency: "CRC",
     }).format(value);
+  };
 
   const getDay = (dateString: string) => {
     const date = new Date(dateString);
@@ -168,15 +173,17 @@ export default function Transactions() {
 
   const getMonth = (dateString: string) => {
     const date = new Date(dateString);
+    const locale = i18n.language.startsWith("es") ? "es-CR" : "en-US";
     return date
-      .toLocaleDateString("es-CR", { month: "short" })
+      .toLocaleDateString(locale, { month: "short" })
       .replace(".", "")
       .toUpperCase();
   };
 
   const formatTxDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("es-CR", {
+    const locale = i18n.language.startsWith("es") ? "es-CR" : "en-US";
+    return date.toLocaleDateString(locale, {
       day: "numeric",
       month: "short",
       hour: "2-digit",
@@ -241,7 +248,7 @@ export default function Transactions() {
       setTransactionToDeleteId(null);
     } catch (error) {
       console.error("Error al eliminar la transacción:", error);
-      alert("Hubo un error al eliminar la transacción.");
+      alert(t("transactions.errorDelete"));
     } finally {
       setSubmitting(false);
     }
@@ -264,20 +271,20 @@ export default function Transactions() {
           onClick={() => setActiveDropdownId(null)}
         />
       )}
-      <AIChatBuble message="He revisado tus últimos movimientos y próximos compromisos de pago." />
+      <AIChatBuble message={t("greetings.transactions")} />
       {/* Contenedor Principal de Transacciones */}
       <div className="flex flex-col md:flex-row gap-6">
         {/* Historial Reciente (abajo en móvil, izquierda en desktop) */}
         <div className="flex-1 order-2 md:order-1">
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-xs font-bold uppercase tracking-widest text-on-surface-variant px-1">
-              Historial Reciente
+              {t("transactions.recentHistory")}
             </h2>
             <Button
               leftIcon={<IconPlus />}
               onClick={() => setIsModalOpen(true)}
             >
-              Añadir Transacción
+              {t("transactions.addTransaction")}
             </Button>
           </div>
           <div className="flex flex-col gap-4">
@@ -303,7 +310,7 @@ export default function Transactions() {
                       </div>
                       <div className="leading-tight truncate">
                         <p className="text-[13px] font-bold text-on-surface group-hover:text-primary transition-colors truncate">
-                          {transaction.description || "Transacción"}
+                          {transaction.description || t("transactions.transaction")}
                         </p>
                       </div>
                     </div>
@@ -360,7 +367,7 @@ export default function Transactions() {
                             className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-black hover:bg-gray-100 transition-colors w-full text-left cursor-pointer"
                           >
                             <IconPencil size={14} className="text-gray-500" />
-                            Editar
+                            {t("transactions.edit")}
                           </button>
                           <button
                             onClick={(e) => {
@@ -370,7 +377,7 @@ export default function Transactions() {
                             className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 transition-colors w-full text-left border-t border-outline-variant/10 cursor-pointer"
                           >
                             <IconTrash size={14} className="text-red-600" />
-                            Eliminar
+                            {t("common.delete")}
                           </button>
                         </div>
                       )}
@@ -380,7 +387,7 @@ export default function Transactions() {
               })
             ) : (
               <div className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10 text-center text-on-surface-variant">
-                <p className="text-sm">No transactions yet.</p>
+                <p className="text-sm">{t("transactions.empty")}</p>
               </div>
             )}
             {/*Boton Show More/Less*/}
@@ -393,7 +400,7 @@ export default function Transactions() {
                   disabled={loading}
                   className="cursor-pointer"
                 >
-                  {transactions.length >= limit ? "Show More" : "Show Less"}
+                  {transactions.length >= limit ? t("transactions.showMore") : t("transactions.showLess")}
                 </Button>
               </div>
             )}
@@ -403,7 +410,7 @@ export default function Transactions() {
         {/* Programados/Futuros (arriba en móvil, derecha en desktop) */}
         <div className="flex-1 order-1 md:order-2">
           <h2 className="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3 px-1">
-            Programados/Futuros
+            {t("transactions.scheduledFuture")}
           </h2>
           {/* Listado de Pagos Programados (Mock) */}
           <div className="flex flex-col gap-3">
@@ -415,7 +422,7 @@ export default function Transactions() {
                   <TransactionCard
                     key={transaction.id}
                     icon={getCategoryIcon(transaction.category?.name)}
-                    title={transaction.description || "Transacción"}
+                    title={transaction.description || t("transactions.transaction")}
                     day={getDay(transaction.date)}
                     month={getMonth(transaction.date)}
                     amount={`${prefix}${formatTxCurrency(transaction.amount)}`}
@@ -426,7 +433,7 @@ export default function Transactions() {
               })
             ) : (
               <div className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10 text-center text-on-surface-variant">
-                <p className="text-sm">No hay pagos programados aun.</p>
+                <p className="text-sm">{t("transactions.noScheduled")}</p>
               </div>
             )}
           </div>
@@ -439,7 +446,7 @@ export default function Transactions() {
           <div className="bg-white border border-outline-variant/30 rounded-3xl p-6 w-full max-w-md shadow-2xl flex flex-col gap-4 mx-4">
             <div className="flex justify-between items-center pb-2 border-b border-outline-variant/10">
               <h3 className="text-lg font-bold text-[#1B252D]">
-                Nueva Transacción
+                {editingTransaction ? t("transactions.edit") : t("transactions.newTransaction")}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -453,14 +460,14 @@ export default function Transactions() {
               {/* Descripción */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-gray-600">
-                  Descripción *
+                  {t("transactions.descLabel")}
                 </label>
                 <input
                   type="text"
                   required
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Ej. Compra de supermercado"
+                  placeholder={t("transactions.descPlaceholder")}
                   className="border border-gray-300 rounded-lg p-3 bg-white text-black focus:outline-none focus:border-[#006b3a] transition-all text-sm"
                 />
               </div>
@@ -468,23 +475,23 @@ export default function Transactions() {
               {/* Tipo de Transacción */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-gray-600">
-                  Tipo de movimiento
+                  {t("transactions.typeLabel")}
                 </label>
                 <select
                   value={type}
                   onChange={(e) => setType(e.target.value as any)}
                   className="border border-gray-300 rounded-lg p-3 bg-white text-black focus:outline-none focus:border-[#006b3a] transition-all text-sm"
                 >
-                  <option value="expense">Gasto</option>
-                  <option value="income">Ingreso</option>
-                  <option value="transfer">Transferencia</option>
+                  <option value="expense">{t("transactions.typeExpense")}</option>
+                  <option value="income">{t("transactions.typeIncome")}</option>
+                  <option value="transfer">{t("transactions.typeTransfer")}</option>
                 </select>
               </div>
 
               {/* Monto */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-gray-600">
-                  Monto *
+                  {t("transactions.amountLabel")}
                 </label>
                 <input
                   type="number"
@@ -501,7 +508,7 @@ export default function Transactions() {
               {/* Fecha */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-gray-600">
-                  Fecha y Hora (Formato 24hrs) *
+                  {t("transactions.dateTimeLabel")}
                 </label>
                 <input
                   type="datetime-local"
@@ -515,7 +522,7 @@ export default function Transactions() {
               {/* Cuenta */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-gray-600">
-                  Cuenta *
+                  {t("transactions.accountLabel")}
                 </label>
                 <select
                   value={accountId}
@@ -524,32 +531,35 @@ export default function Transactions() {
                   className="border border-gray-300 rounded-lg p-3 bg-white text-black focus:outline-none focus:border-[#006b3a] transition-all text-sm"
                 >
                   <option value="" disabled>
-                    Selecciona una cuenta
+                    {t("transactions.selectAccount")}
                   </option>
-                  {accounts.map((acc) => (
-                    <option key={acc.id} value={acc.id}>
-                      {acc.name} (
-                      {new Intl.NumberFormat("es-CR", {
-                        style: "currency",
-                        currency: "CRC",
-                      }).format(acc.balance)}
-                      )
-                    </option>
-                  ))}
+                  {accounts.map((acc) => {
+                    const locale = i18n.language.startsWith("es") ? "es-CR" : "en-US";
+                    return (
+                      <option key={acc.id} value={acc.id}>
+                        {acc.name} (
+                        {new Intl.NumberFormat(locale, {
+                          style: "currency",
+                          currency: "CRC",
+                        }).format(acc.balance)}
+                        )
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 
               {/* Categoría */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-gray-600">
-                  Categoría
+                  {t("transactions.categoryLabel")}
                 </label>
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
                   className="border border-gray-300 rounded-lg p-3 bg-white text-black focus:outline-none focus:border-[#006b3a] transition-all text-sm"
                 >
-                  <option value="">Ninguna</option>
+                  <option value="">{t("common.none")}</option>
                   {categories
                     .filter((cat) => {
                       // Si la categoría no tiene la propiedad 'type', la mostramos por defecto
@@ -574,14 +584,14 @@ export default function Transactions() {
                   onClick={() => setIsModalOpen(false)}
                   className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-[13px] font-bold px-4 py-2.5 rounded-xl cursor-pointer transition-colors"
                 >
-                  Cancelar
+                  {t("common.cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
                   className="bg-[#006b3a] hover:bg-[#005a30] disabled:bg-gray-400 text-white text-[13px] font-bold px-5 py-2.5 rounded-xl cursor-pointer transition-colors flex items-center justify-center min-w-[100px]"
                 >
-                  {submitting ? "Guardando..." : "Guardar"}
+                  {submitting ? t("common.saving") : t("common.save")}
                 </button>
               </div>
             </form>
@@ -598,11 +608,10 @@ export default function Transactions() {
             </div>
             <div className="flex flex-col gap-1">
               <h3 className="text-lg font-bold text-gray-950">
-                Confirmar eliminación
+                {t("transactions.confirmDelete")}
               </h3>
               <p className="text-sm text-gray-500">
-                ¿Estás seguro de que deseas eliminar esta transacción? Esta
-                acción no se puede deshacer.
+                {t("transactions.deleteText")}
               </p>
             </div>
             <div className="flex w-full gap-3 mt-2">
@@ -614,7 +623,7 @@ export default function Transactions() {
                 }}
                 className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-bold py-2.5 rounded-xl cursor-pointer transition-colors"
               >
-                Cancelar
+                {t("common.cancel")}
               </button>
               <button
                 type="button"
@@ -622,7 +631,7 @@ export default function Transactions() {
                 onClick={handleConfirmDelete}
                 className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white text-sm font-bold py-2.5 rounded-xl cursor-pointer transition-colors"
               >
-                {submitting ? "Eliminando..." : "Eliminar"}
+                {submitting ? t("common.deleting") : t("common.delete")}
               </button>
             </div>
           </div>

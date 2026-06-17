@@ -4,6 +4,7 @@ import { use, useEffect, useRef } from "react";
 import { useOutletContext } from "react-router-dom";
 import Button from "../../ui/Button";
 import { BudgetContext } from "./BudgetContext";
+import { useTranslation } from "react-i18next";
 
 interface OutletContextType {
   isCollapsed: boolean;
@@ -11,6 +12,7 @@ interface OutletContextType {
 }
 
 export default function SaveBudgetBanner() {
+  const { t } = useTranslation();
   const context = use(BudgetContext);
   const outletContext = useOutletContext<OutletContextType>() || { isCollapsed: true };
   const wasVisibleRef = useRef(false);
@@ -79,10 +81,10 @@ export default function SaveBudgetBanner() {
     >
       <div className="flex flex-row md:flex-col justify-between items-center md:items-start gap-2 mr-0 md:mr-2">
         <span className="text-[10px] md:text-xs text-outline font-bold uppercase tracking-wider capitalize select-none">
-          {isDraft ? `Borrador • ${monthYearStr}` : `Ajustes • ${monthYearStr}`}
+          {isDraft ? t("budget.draftTitle", { month: monthYearStr }) : t("budget.adjust", { month: monthYearStr })}
         </span>
         <span className="text-xs md:text-sm font-bold text-on-surface">
-          Por asignar: <span className={remainingToAllocate < 0 ? 'text-error' : 'text-[#008f43]'}>{formatCurrency(remainingToAllocate)}</span>
+          {t("budget.toAllocate", { amount: formatCurrency(remainingToAllocate) })}
         </span>
       </div>
 
@@ -93,20 +95,20 @@ export default function SaveBudgetBanner() {
             disabled={loading || !hasUnsavedChanges}
             className="flex items-center justify-center gap-2 text-sm font-bold text-on-surface hover:text-primary transition-colors disabled:opacity-50 py-2 px-3 hover:bg-surface-container rounded-xl md:rounded-none md:p-0 cursor-pointer border-none bg-transparent"
           >
-            <IconDeviceFloppy size={18} /> Guardar
+            <IconDeviceFloppy size={18} /> {t("common.save")}
           </button>
           <div className="hidden md:block w-[1px] h-6 bg-outline-variant/30"></div>
           {isPastMonth ? (
-            <span className="text-xs text-outline italic px-2">No editable</span>
+            <span className="text-xs text-outline italic px-2">{t("budget.notEditable")}</span>
           ) : (
             <Button variant="primary" size="sm" onClick={handleActivateBudget} loading={loading}>
-              Activar {capitalizedMonth}
+              {t("budget.activateMonth", { month: capitalizedMonth })}
             </Button>
           )}
         </div>
       ) : (
         <Button variant="primary" size="sm" onClick={handleSaveBudget} loading={loading}>
-          Guardar en {capitalizedMonth}
+          {t("budget.saveMonth", { month: capitalizedMonth })}
         </Button>
       )}
     </motion.div>

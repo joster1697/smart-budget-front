@@ -20,15 +20,20 @@ import { useNavigate } from "react-router-dom";
 import { fetchTransactions } from "../../store/slices/transactionsSlice";
 import type { Transaction } from "../../store/slices/transactionsSlice";
 import transactionService from "../../services/transactionService";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n";
 
 export const formatDueDate = (dateString: string) => {
   const date = new Date(dateString);
-  return `Vence a las ${date.toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" })} `;
+  const locale = i18n.language.startsWith("es") ? "es-CR" : "en-US";
+  const timeStr = date.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  return i18n.t("home.vence", { time: timeStr });
 };
 
 export default function Home() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { accounts } = useAppSelector((state) => state.accounts);
   const { transactions } = useAppSelector((state) => state.transactions);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
@@ -99,15 +104,18 @@ export default function Home() {
     fetchUpcoming();
   }, [transactions]);
 
-  const formatTxCurrency = (value: number) =>
-    new Intl.NumberFormat("es-CR", {
+  const formatTxCurrency = (value: number) => {
+    const locale = i18n.language.startsWith("es") ? "es-CR" : "en-US";
+    return new Intl.NumberFormat(locale, {
       style: "currency",
       currency: "CRC",
     }).format(value);
+  };
 
   const formatTxDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("es-CR", {
+    const locale = i18n.language.startsWith("es") ? "es-CR" : "en-US";
+    return date.toLocaleDateString(locale, {
       day: "numeric",
       month: "short",
       hour: "2-digit",
@@ -158,8 +166,9 @@ export default function Home() {
 
   const getMonthAbbreviation = (dateString: string) => {
     const date = new Date(dateString);
+    const locale = i18n.language.startsWith("es") ? "es-CR" : "en-US";
     return date
-      .toLocaleDateString("es-CR", { month: "short" })
+      .toLocaleDateString(locale, { month: "short" })
       .replace(".", "")
       .toUpperCase();
   };
@@ -167,19 +176,19 @@ export default function Home() {
   return (
     <section className="flex flex-col gap-6">
       {/* Greeting Card */}
-      <AIChatBubble message="¡Hola de nuevo, Jorge! He preparado el resumen de tu arquitectura patrimonial hoy." />
+      <AIChatBubble message={t("greetings.home")} />
 
       {/* Cuentas */}
       <div>
         <div className="flex justify-between items-end mb-3 px-1">
           <h2 className="text-[22px] font-black tracking-tight text-on-surface font-manrope">
-            Cuentas
+            {t("home.accounts")}
           </h2>
           <button
             onClick={() => navigate("/dashboard/accounts")}
             className="text-xs font-bold text-[#005226] hover:opacity-80 cursor-pointer"
           >
-            Ver todas
+            {t("home.viewAll")}
           </button>
         </div>
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 lg:gap-5">
@@ -191,11 +200,12 @@ export default function Home() {
                 icon = <IconTrendingUp size={18} />;
               if (account.type === "credit") icon = <IconLeaf size={18} />;
               // Formateamos los balances en formato de colones (₡100.00)
-              const formattedBalance = new Intl.NumberFormat("es-CR", {
+              const locale = i18n.language.startsWith("es") ? "es-CR" : "en-US";
+              const formattedBalance = new Intl.NumberFormat(locale, {
                 style: "currency",
                 currency: "CRC",
               }).format(account.balance);
-              const formattedVirtual = new Intl.NumberFormat("es-CR", {
+              const formattedVirtual = new Intl.NumberFormat(locale, {
                 style: "currency",
                 currency: "CRC",
               }).format(account.balance - (account.reserved_balance ?? 0));
@@ -219,7 +229,7 @@ export default function Home() {
         <div className="flex-1 bg-surface-container-lowest rounded-[28px] p-6 shadow-sm border border-outline-variant/20">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-[22px] font-black tracking-tight text-[#001f26] font-manrope">
-              Actividad Reciente
+              {t("home.recentActivity")}
             </h2>
           </div>
           <div className="space-y-5">
@@ -248,7 +258,7 @@ export default function Home() {
               })
             ) : (
               <div className="text-center py-6 text-sm text-gray-500">
-                No hay transacciones reciente
+                {t("home.noRecentTransactions")}
               </div>
             )}
           </div>
@@ -258,7 +268,7 @@ export default function Home() {
               onClick={() => navigate("/dashboard/transactions")}
               className="text-[13px] font-bold text-[#005226] hover:opacity-80 cursor-pointer"
             >
-              Ver toda la actividad &gt;
+              {t("home.viewAllActivity")}
             </button>
           </div>
         </div>
@@ -267,14 +277,14 @@ export default function Home() {
         <div className="flex-1 bg-surface-container-lowest rounded-[28px] p-6 shadow-sm border border-outline-variant/20">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-[22px] font-black tracking-tight text-[#001f26] font-manrope">
-              Próximos Pagos
+              {t("home.upcomingPayments")}
             </h2>
             <IconCalendarEvent size={22} className="text-[#005226]" />
           </div>
           <div className="flex flex-col gap-3">
             {loadingUpcoming ? (
               <div className="text-center py-6 text-sm text-gray-500 font-medium animate-pulse">
-                Cargando próximos pagos...
+                {t("home.loadingUpcoming")}
               </div>
             ) : upcomingPayments.length > 0 ? (
               upcomingPayments.map((payment) => (
@@ -292,10 +302,10 @@ export default function Home() {
             ) : (
               <div className="text-center py-8 px-4 border border-dashed border-[#005226]/20 rounded-2xl bg-surface-variant/10">
                 <p className="text-sm text-on-surface-variant font-bold mb-1">
-                  ¡Todo al día!
+                  {t("home.upToDate")}
                 </p>
                 <p className="text-xs text-on-surface-variant/70">
-                  No tienes pagos programados próximamente.
+                  {t("home.noScheduledPayments")}
                 </p>
               </div>
             )}

@@ -1,6 +1,7 @@
 import { IconCheck, IconX, IconListDetails } from "@tabler/icons-react";
 import { ResolvedAction, ActionCandidate } from "../../types/chat";
 import { useAgentChat } from "../../hooks/useAgentChat";
+import { useTranslation } from "react-i18next";
 
 interface ActionInlineButtonsProps {
   action: ResolvedAction;
@@ -8,6 +9,7 @@ interface ActionInlineButtonsProps {
 }
 
 export default function ActionInlineButtons({ action, actionIndex }: ActionInlineButtonsProps) {
+  const { t } = useTranslation();
   const { confirmAction, selectAction, cancelActions } = useAgentChat();
 
   const handleConfirm = () => {
@@ -34,7 +36,7 @@ export default function ActionInlineButtons({ action, actionIndex }: ActionInlin
       {shouldShowCandidates ? (
         <div className="flex flex-col gap-2">
           {action.candidates?.map((candidate: ActionCandidate, candidateIdx) => {
-            const candidateName = candidate.name || candidate.title || candidate.description || `Opción ${candidateIdx + 1}`;
+            const candidateName = candidate.name || candidate.title || candidate.description || t("chat.option", { index: candidateIdx + 1 });
             return (
               <button
                 key={candidateIdx}
@@ -53,7 +55,7 @@ export default function ActionInlineButtons({ action, actionIndex }: ActionInlin
             className="flex items-center justify-center gap-2 px-4 py-2 mt-1 text-error hover:bg-error/10 rounded-lg text-sm font-medium transition-colors"
           >
             <IconX size={16} />
-            Cancelar
+            {t("common.cancel")}
           </button>
         </div>
       ) : (
@@ -63,14 +65,14 @@ export default function ActionInlineButtons({ action, actionIndex }: ActionInlin
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-bold hover:brightness-110 transition-all active:scale-95 shadow-sm"
           >
             <IconCheck size={18} />
-            Confirmar
+            {t("common.confirm")}
           </button>
           <button
             onClick={handleCancel}
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-surface-variant text-on-surface-variant rounded-lg text-sm font-bold hover:bg-surface-variant/80 transition-all active:scale-95"
           >
             <IconX size={18} />
-            Cancelar
+            {t("common.cancel")}
           </button>
         </div>
       )}

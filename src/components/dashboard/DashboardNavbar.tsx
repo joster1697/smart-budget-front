@@ -5,6 +5,7 @@ import { useAgentChat } from "../../hooks/useAgentChat";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import { NAV_ITEMS } from "../../constants/navigation";
 import { addMessage, setThinking } from "../../store/slices/chatSlice";
+import { useTranslation } from "react-i18next";
 
 interface DashboardNavbarProps {
   isCollapsed: boolean;
@@ -12,6 +13,7 @@ interface DashboardNavbarProps {
 }
 
 export default function DashboardNavbar({ isCollapsed, setIsCollapsed }: DashboardNavbarProps) {
+  const { t } = useTranslation();
   const [inputValue, setInputValue] = useState("");
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -58,7 +60,7 @@ export default function DashboardNavbar({ isCollapsed, setIsCollapsed }: Dashboa
     dispatch(addMessage({
       id: Math.random().toString(),
       sender: "user",
-      text: item.mobileLabel || "",
+      text: t(`sidebar.${item.translationKey}`) || "",
       timestamp: new Date().toISOString()
     }));
 
@@ -71,7 +73,7 @@ export default function DashboardNavbar({ isCollapsed, setIsCollapsed }: Dashboa
     dispatch(addMessage({
       id: Math.random().toString(),
       sender: "agent",
-      text: item.greeting || "",
+      text: t(`greetings.${item.translationKey}`) || "",
       timestamp: new Date().toISOString()
     }));
 
@@ -102,7 +104,7 @@ export default function DashboardNavbar({ isCollapsed, setIsCollapsed }: Dashboa
         {isCollapsed && (
           <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider animate-pulse">
             <IconMessageCircle size={18} />
-            <span>Preguntar a Fynkro</span>
+            <span>{t("navbar.askFynkro")}</span>
           </div>
         )}
       </button>
@@ -117,7 +119,7 @@ export default function DashboardNavbar({ isCollapsed, setIsCollapsed }: Dashboa
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isThinking}
-            placeholder="Pregúntale a Fynkro..."
+            placeholder={t("navbar.askPlaceholder")}
             className="w-full bg-surface border border-outline-variant/30 rounded-full py-3.5 pl-5 pr-14 text-[13px] outline-none placeholder:text-outline shadow-sm focus:border-primary/50 transition-colors text-on-surface font-medium disabled:opacity-50"
           />
           <button
@@ -131,14 +133,14 @@ export default function DashboardNavbar({ isCollapsed, setIsCollapsed }: Dashboa
 
         {/* Chips */}
         <div className="flex flex-wrap gap-2.5 pb-1">
-          {NAV_ITEMS.filter(item => item.mobileLabel).map((item) => (
+          {NAV_ITEMS.filter(item => item.translationKey).map((item) => (
             <button
               key={item.to}
               onClick={() => handleChipClick(item)}
               className={`whitespace-nowrap px-4 py-2 font-bold text-[11px] rounded-full uppercase tracking-wider active:scale-95 transition-transform 
               ${item.to === "/dashboard/home" ? "bg-[#d1efdc] text-[#005226]" : "bg-surface-variant/60 text-on-surface-variant"}`}
             >
-              {item.mobileLabel}
+              {t(`sidebar.${item.translationKey}`)}
             </button>
           ))}
         </div>

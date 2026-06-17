@@ -3,7 +3,6 @@ import {
   IconArrowRight,
   IconBrain,
   IconMailFilled,
-  IconWorld,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -15,8 +14,12 @@ import { LoginFormValues, loginSchema } from "../lib/validations/authSchemas";
 import authService from "../services/authService";
 import { useAppDispatch } from "../store/hooks";
 import { setCredentials } from "../store/slices/authSlice";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "../components/ui/LanguageSelector";
+import i18n from "../i18n";
 
 export default function Login() {
+  const { t } = useTranslation();
   // Error de servidor separado de los errores de validación del form
   const [serverError, setServerError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -45,7 +48,7 @@ export default function Login() {
       );
       navigate("/dashboard");
     } catch {
-      setServerError("Error al conectar con el servidor");
+      setServerError(t("auth.login.serverError"));
     }
   };
   return (
@@ -63,12 +66,19 @@ export default function Login() {
             {import.meta.env.VITE_APP_NAME}
           </h2>
           <h1 className="text-inverse-on-surface text-5xl lg:text-7xl leading-[1.1] font-black mb-8 tracking-[-0.033em]">
-            Domina tu <br /> <span className="text-primary">Arquitectura</span>
-            <br /> Financiera.
+            {i18n.language.startsWith("es") ? (
+              <>
+                Domina tu <br /> <span className="text-primary">Arquitectura</span>
+                <br /> Financiera.
+              </>
+            ) : (
+              <>
+                Master Your <br /> Financial <span className="text-primary">Architecture</span>.
+              </>
+            )}
           </h1>
           <h3 className="text-[#96c5a9] max-w-md text-xl leading-relaxed">
-            Accede a tu santuario financiero diseñado para la precisión y el
-            crecimiento estratégico.
+            {t("auth.login.subSlogan")}
           </h3>
         </div>
         <div className="relative z-10 mt-12 md:mt-0">
@@ -78,11 +88,10 @@ export default function Login() {
             </div>
             <div>
               <p className="text-surface-bright font-bold text-base">
-                Inteligencia Financiera Activa
+                {t("auth.login.intelligenceTitle")}
               </p>
               <p className="text-[#96c5a9] text-sm">
-                Nuestra IA categoriza tus gastos y optimiza tus ahorros
-                automáticamente para tu tranquilidad.
+                {t("auth.login.intelligenceDesc")}
               </p>
             </div>
           </div>
@@ -91,13 +100,11 @@ export default function Login() {
 
       {/* Panel derecho con formulario */}
       <div className="relative w-full flex gap-9 p-6 md:p-14 justify-center items-center md:bg-surface-container-lowest">
-        {/* Botones de ayuda e idioma — anclados al panel derecho */}
-        <div className="absolute top-6 right-6 flex gap-2">
+        {/* Botones de ayuda e idioma — anclados al panel derecho (visible solo en escritorio/tablet) */}
+        <div className="hidden md:flex absolute top-6 right-6 gap-2 items-center">
+          <LanguageSelector />
           <button className="text-on-surface-variant hover:bg-surface-container transition-colors p-2 rounded-lg active:scale-95">
             <IconHelpFilled size={24} className="text-on-surface-variant" />
-          </button>
-          <button className="text-on-surface-variant hover:bg-surface-container transition-colors p-2 rounded-lg active:scale-95">
-            <IconWorld size={24} className="text-on-surface-variant" />
           </button>
         </div>
 
@@ -113,11 +120,11 @@ export default function Login() {
             <div className="text-center md:text-left">
               <h1 className="font-black tracking-tight text-4xl text-on-surface mb-3">
                 <span className="md:hidden uppercase">{import.meta.env.VITE_APP_NAME}</span>
-                <span className="hidden md:inline">Bienvenido de nuevo</span>
+                <span className="hidden md:inline">{t("auth.login.title")}</span>
               </h1>
               <p className="text-lg text-on-surface-variant">
-                <span className="md:hidden">Bienvenido de nuevo a tu santuario financiero.</span>
-                <span className="hidden md:inline">Ingresa tus credenciales para continuar.</span>
+                <span className="md:hidden">{t("auth.login.welcomeMobile")}</span>
+                <span className="hidden md:inline">{t("auth.login.welcomeDesktop")}</span>
               </p>
             </div>
           </div>
@@ -131,8 +138,8 @@ export default function Login() {
                 <InputField
                   id="email"
                   type="email"
-                  label="Correo Electrónico"
-                  placeholder="nombre@ejemplo.com"
+                  label={t("auth.login.emailLabel")}
+                  placeholder={t("auth.login.emailPlaceholder")}
                   error={errors.email?.message}
                   leftIcon={
                     <IconMailFilled size={20} className="text-outline" />
@@ -143,19 +150,19 @@ export default function Login() {
                 <div className="flex flex-col gap-1.5">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-semibold text-on-surface">
-                      Contraseña
+                      {t("auth.login.passwordLabel")}
                     </span>
                     <button
                       type="button"
                       className="text-sm transition-all font-bold text-primary cursor-pointer hover:underline"
                     >
-                      ¿Olvidaste tu contraseña?
+                      {t("auth.login.forgotPassword")}
                     </button>
                   </div>
                   <InputField
                     id="password"
                     type="password"
-                    placeholder="Ingresa tu contraseña"
+                    placeholder={t("auth.login.passwordPlaceholder")}
                     error={errors.password?.message}
                     {...register("password")}
                   />
@@ -177,7 +184,7 @@ export default function Login() {
                     <IconArrowRight size={24} className="text-on-primary" />
                   }
                 >
-                  Iniciar Sesión
+                  {t("auth.login.submitBtn")}
                 </Button>
               </div>
             </form>
@@ -185,15 +192,25 @@ export default function Login() {
 
           <div className="text-center">
             <p className="text-base text-on-surface-variant">
-              ¿No tienes una cuenta?{" "}
+              {t("auth.login.noAccount")}{" "}
               <button
                 type="button"
                 className="ml-1 font-black text-primary cursor-pointer hover:underline"
                 onClick={() => navigate("/register")}
               >
-                Crear Registro Gratis
+                {t("auth.login.registerFree")}
               </button>
             </p>
+          </div>
+
+          {/* Selector de idioma y botón de ayuda — visible solo en móvil, centrado al final */}
+          <div className="flex md:hidden flex-col items-center gap-4 mt-4 pt-6 border-t border-on-surface-variant/10 w-full">
+            <div className="flex gap-4 items-center">
+              <LanguageSelector />
+              <button className="text-on-surface-variant hover:bg-surface-container transition-colors p-2 rounded-lg active:scale-95">
+                <IconHelpFilled size={24} className="text-on-surface-variant" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

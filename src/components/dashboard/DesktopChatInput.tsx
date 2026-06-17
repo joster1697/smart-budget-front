@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { IconSend, IconMicrophone } from "@tabler/icons-react";
 import { useAgentChat } from "../../hooks/useAgentChat";
 import { useAppSelector } from "../../store/hooks";
+import { useTranslation } from "react-i18next";
 
 export default function DesktopChatInput() {
+  const { t } = useTranslation();
   const [inputValue, setInputValue] = useState("");
   const navigate = useNavigate();
   const { sendMessage } = useAgentChat();
@@ -42,7 +44,7 @@ export default function DesktopChatInput() {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Pregúntale a Fynkro sobre tu portafolio..." 
+          placeholder={t("navbar.askPlaceholder")} 
           className="flex-1 bg-transparent outline-none text-on-surface font-medium placeholder:text-on-surface-variant/60 text-[15px]"
           disabled={isThinking}
         />

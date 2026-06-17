@@ -1,4 +1,3 @@
-import { IconChartLine } from "@tabler/icons-react";
 
 interface PrimaryCheckingAnalysisProps {
   account?: any;

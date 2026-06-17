@@ -28,15 +28,22 @@ interface BudgetCategoryCardProps {
 const getCategoryIcon = (name: string) => {
   const lowerName = name.toLowerCase();
   const iconSize = 20;
-  if (lowerName.includes("aliment") || lowerName.includes("comida")) return <IconToolsKitchen2 size={iconSize} className="text-[#005226]" />;
-  if (lowerName.includes("transport") || lowerName.includes("auto")) return <IconCar size={iconSize} className="text-[#005226]" />;
-  if (lowerName.includes("vivienda") || lowerName.includes("hogar")) return <IconHome size={iconSize} className="text-[#005226]" />;
-  if (lowerName.includes("entretenimiento") || lowerName.includes("ocio")) return <IconDeviceTv size={iconSize} className="text-[#005226]" />;
-  if (lowerName.includes("salud") || lowerName.includes("medic")) return <IconMedicalCross size={iconSize} className="text-[#005226]" />;
+  if (lowerName.includes("aliment") || lowerName.includes("comida"))
+    return <IconToolsKitchen2 size={iconSize} className="text-[#005226]" />;
+  if (lowerName.includes("transport") || lowerName.includes("auto"))
+    return <IconCar size={iconSize} className="text-[#005226]" />;
+  if (lowerName.includes("vivienda") || lowerName.includes("hogar"))
+    return <IconHome size={iconSize} className="text-[#005226]" />;
+  if (lowerName.includes("entretenimiento") || lowerName.includes("ocio"))
+    return <IconDeviceTv size={iconSize} className="text-[#005226]" />;
+  if (lowerName.includes("salud") || lowerName.includes("medic"))
+    return <IconMedicalCross size={iconSize} className="text-[#005226]" />;
   return <IconChartPie size={iconSize} className="text-[#005226]" />;
 };
 
-export default function BudgetCategoryCard({ category }: BudgetCategoryCardProps) {
+export default function BudgetCategoryCard({
+  category,
+}: BudgetCategoryCardProps) {
   const context = use(BudgetContext);
   if (!context) return null;
 
@@ -53,7 +60,9 @@ export default function BudgetCategoryCard({ category }: BudgetCategoryCardProps
   };
 
   return (
-    <div className={`flex flex-col justify-between bg-surface-container-lowest rounded-2xl rounded-tl-sm p-3 sm:p-4.5 shadow-sm border transition-all duration-300 ${canEdit ? 'border-[#005226]/30 bg-surface-container-low/20 shadow-md scale-[1.01]' : 'border-outline-variant/20'}`}>
+    <div
+      className={`flex flex-col justify-between bg-surface-container-lowest rounded-2xl rounded-tl-sm p-3 sm:p-4.5 shadow-sm border transition-all duration-300 ${canEdit ? "border-[#005226]/30 bg-surface-container-low/20 shadow-md scale-[1.01]" : "border-outline-variant/20"}`}
+    >
       <div className="flex flex-col mb-1.5 sm:mb-3">
         <div className="flex flex-row justify-between items-center gap-2 w-full">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
@@ -61,7 +70,12 @@ export default function BudgetCategoryCard({ category }: BudgetCategoryCardProps
               {getCategoryIcon(category.name)}
             </div>
             <div className="min-w-0 flex-1">
-              <h4 className="font-bold text-sm sm:text-lg text-on-surface line-clamp-2 break-words" title={category.name}>{category.name}</h4>
+              <h4
+                className="font-bold text-sm sm:text-lg text-on-surface line-clamp-2 break-words"
+                title={category.name}
+              >
+                {category.name}
+              </h4>
             </div>
           </div>
 
@@ -78,22 +92,40 @@ export default function BudgetCategoryCard({ category }: BudgetCategoryCardProps
             </div>
           ) : (
             <div className="text-right shrink-0 whitespace-nowrap">
-              <span className="text-[10px] sm:text-xs text-outline font-medium">Límite:</span>
-              <span className="ml-1.5 font-bold text-xs sm:text-base text-on-surface">{formatCurrency(category.allocated_amount)}</span>
+              <span className="text-[10px] sm:text-xs text-outline font-medium">
+                Límite:
+              </span>
+              <span className="ml-1.5 font-bold text-xs sm:text-base text-on-surface">
+                {formatCurrency(category.allocated_amount)}
+              </span>
             </div>
           )}
         </div>
 
-        {isActive && category.original_allocated_amount !== category.allocated_amount && (
-          <div className={`w-fit text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full flex items-start gap-1 mt-1.5 ${category.allocated_amount > category.original_allocated_amount ? 'bg-error/10 text-error' : 'bg-[#008f43]/10 text-[#008f43]'}`}>
-            <span className="shrink-0 mt-[2px]">
-              {category.allocated_amount > category.original_allocated_amount ? <IconArrowUp size={10} /> : <IconArrowDown size={10} />}
-            </span>
-            <span className="leading-tight">
-              {formatCurrency(Math.abs(category.allocated_amount - category.original_allocated_amount))} aj. (Orig: {formatCurrency(category.original_allocated_amount)})
-            </span>
-          </div>
-        )}
+        {isActive &&
+          category.original_allocated_amount !== category.allocated_amount && (
+            <div
+              className={`w-fit text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full flex items-start gap-1 mt-1.5 ${category.allocated_amount > category.original_allocated_amount ? "bg-error/10 text-error" : "bg-[#008f43]/10 text-[#008f43]"}`}
+            >
+              <span className="shrink-0 mt-[2px]">
+                {category.allocated_amount >
+                category.original_allocated_amount ? (
+                  <IconArrowUp size={10} />
+                ) : (
+                  <IconArrowDown size={10} />
+                )}
+              </span>
+              <span className="leading-tight">
+                {formatCurrency(
+                  Math.abs(
+                    category.allocated_amount -
+                      category.original_allocated_amount,
+                  ),
+                )}{" "}
+                aj. (Orig: {formatCurrency(category.original_allocated_amount)})
+              </span>
+            </div>
+          )}
       </div>
 
       {canEdit ? (
@@ -116,18 +148,23 @@ export default function BudgetCategoryCard({ category }: BudgetCategoryCardProps
         <div>
           <div className="flex flex-wrap items-baseline justify-between gap-1 text-[10px] sm:text-xs mb-1.5">
             <span className="text-outline font-medium">
-              {formatCurrency(category.spent_amount)} de {formatCurrency(category.allocated_amount)}
+              {formatCurrency(category.spent_amount)} de{" "}
+              {formatCurrency(category.allocated_amount)}
             </span>
-            <span className="font-bold text-on-surface">{Math.round(category.usage_percentage)}%</span>
+            <span className="font-bold text-on-surface">
+              {Math.round(category.usage_percentage)}%
+            </span>
           </div>
           <div className="h-1.5 sm:h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full ${category.is_exceeded ? 'bg-error' : 'bg-[#008f43]'}`}
+              className={`h-full rounded-full ${category.is_exceeded ? "bg-error" : "bg-[#008f43]"}`}
               style={{ width: `${Math.min(category.usage_percentage, 100)}%` }}
             ></div>
           </div>
           {category.is_exceeded && (
-            <p className="text-error text-[9px] sm:text-xs mt-1 font-medium">Límite excedido.</p>
+            <p className="text-error text-[9px] sm:text-xs mt-1 font-medium">
+              Límite excedido.
+            </p>
           )}
         </div>
       )}

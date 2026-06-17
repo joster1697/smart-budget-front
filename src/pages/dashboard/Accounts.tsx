@@ -17,7 +17,8 @@ import {
   IconLeaf,
   IconPlus,
 } from "@tabler/icons-react";
-
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n";
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -55,13 +56,16 @@ const getAccountIcon = (type: string) => {
   }
 };
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("es-CR", {
+const formatCurrency = (value: number) => {
+  const locale = i18n.language.startsWith("es") ? "es-CR" : "en-US";
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: "CRC",
   }).format(value);
+};
 
 export default function Accounts() {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { accounts, loading } = useAppSelector((state) => state.accounts);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -123,13 +127,13 @@ export default function Accounts() {
 
             <div className="flex items-center gap-3 sm:gap-6 text-[10px] sm:text-xs font-bold shrink-0">
               <div className="flex flex-col sm:flex-row sm:gap-1.5 items-end sm:items-center">
-                <span className="text-outline/60 text-[9px] uppercase">Real</span>
+                <span className="text-outline/60 text-[9px] uppercase">{t("accounts.real")}</span>
                 <span className="text-[#1B252D] tabular-nums font-extrabold">
                   {formatCurrency(selectedAccount.balance)}
                 </span>
               </div>
               <div className="flex flex-col sm:flex-row sm:gap-1.5 items-end sm:items-center border-l border-outline-variant/30 pl-3">
-                <span className="text-outline/60 text-[9px] uppercase">Virtual</span>
+                <span className="text-outline/60 text-[9px] uppercase">{t("accounts.virtual")}</span>
                 <span className="text-[#008f43] tabular-nums font-black">
                   {formatCurrency(
                     selectedAccount.balance - (selectedAccount.reserved_balance ?? 0)
@@ -147,14 +151,14 @@ export default function Accounts() {
       >
         <AIChatBubble
           layoutId="accounts-header"
-          title="Gestión de Cuentas"
-          message="Selecciona una de tus cuentas para profundizar en su análisis patrimonial y opciones de gestión."
+          title={t("accounts.title")}
+          message={t("accounts.description")}
           actions={
             <button
               onClick={() => setIsModalOpen(true)}
               className="flex items-center gap-1.5 bg-[#006b3a] hover:bg-[#005a30] active:scale-95 text-white text-[13px] font-bold px-4 py-2 rounded-full shadow-sm transition-all duration-200 cursor-pointer"
             >
-              <IconPlus size={16} /> Add Account
+              <IconPlus size={16} /> {t("accounts.addAccount")}
             </button>
           }
         />
@@ -176,7 +180,7 @@ export default function Accounts() {
             <div className="flex flex-col gap-2">
               <div className="flex gap-2 items-center text-[10px] sm:text-xs text-outline font-black uppercase tracking-widest pl-2 select-none">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#008f43]" />
-                <span>Resumen de Cuentas</span>
+                <span>{t("accounts.summary")}</span>
               </div>
               <motion.div
                 variants={containerVariants}
@@ -230,7 +234,7 @@ export default function Accounts() {
                 <div className="flex flex-col gap-2">
                   <div className="flex gap-2 items-center text-[10px] sm:text-xs text-outline font-black uppercase tracking-widest pl-2 select-none">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#008f43]" />
-                    <span>Análisis Patrimonial - {selectedAccount.name}</span>
+                    <span>{t("accounts.analysis", { name: selectedAccount.name })}</span>
                   </div>
                   <PrimaryCheckingAnalysis account={selectedAccount} />
                 </div>
@@ -243,7 +247,7 @@ export default function Accounts() {
                 <div className="flex flex-col gap-2">
                   <div className="flex gap-2 items-center text-[10px] sm:text-xs text-outline font-black uppercase tracking-widest pl-2 select-none">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#008f43]" />
-                    <span>Detalles y Saldos</span>
+                    <span>{t("accounts.details")}</span>
                   </div>
                   <AccountDetails account={selectedAccount} />
                 </div>
@@ -256,7 +260,7 @@ export default function Accounts() {
                 <div className="flex flex-col gap-2">
                   <div className="flex gap-2 items-center text-[10px] sm:text-xs text-outline font-black uppercase tracking-widest pl-2 select-none">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#008f43]" />
-                    <span>Tarjetas de Crédito Vinculadas</span>
+                    <span>{t("accounts.linkedCards")}</span>
                   </div>
                   <LinkedCreditCards account={selectedAccount} />
                 </div>
@@ -268,7 +272,7 @@ export default function Accounts() {
               <div className="flex flex-col gap-2">
                 <div className="flex gap-2 items-center text-[10px] sm:text-xs text-outline font-black uppercase tracking-widest pl-2 select-none">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#008f43]" />
-                  <span>Herramientas Inteligentes</span>
+                  <span>{t("accounts.smartTools")}</span>
                 </div>
                 <SmartTools />
               </div>
@@ -280,7 +284,7 @@ export default function Accounts() {
                 <div className="flex flex-col gap-2">
                   <div className="flex gap-2 items-center text-[10px] sm:text-xs text-outline font-black uppercase tracking-widest pl-2 select-none mt-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-error" />
-                    <span className="text-error">Zona de Peligro</span>
+                    <span className="text-error">{t("accounts.dangerZone")}</span>
                   </div>
                   <DangerZone account={selectedAccount} />
                 </div>

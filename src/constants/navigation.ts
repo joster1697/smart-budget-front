@@ -11,6 +11,7 @@ export const NAV_ITEMS = [
   {
     to: "/dashboard/home",
     icon: IconLayoutDashboard,
+    translationKey: "home",
     sidebarLabel: "Home",
     mobileLabel: "Resumen de mi cuenta",
     greeting:
@@ -19,6 +20,7 @@ export const NAV_ITEMS = [
   {
     to: "/dashboard/accounts",
     icon: IconWallet,
+    translationKey: "accounts",
     sidebarLabel: "Accounts",
     mobileLabel: "Ver mis cuentas",
     greeting:
@@ -27,6 +29,7 @@ export const NAV_ITEMS = [
   {
     to: "/dashboard/transactions",
     icon: IconReceipt,
+    translationKey: "transactions",
     sidebarLabel: "Transactions",
     mobileLabel: "Transactions",
     greeting:
@@ -35,6 +38,7 @@ export const NAV_ITEMS = [
   {
     to: "/dashboard/reports",
     icon: IconBrain,
+    translationKey: "intelligence",
     sidebarLabel: "Intelligence",
     mobileLabel: "Análisis inteligente",
     greeting:
@@ -43,6 +47,7 @@ export const NAV_ITEMS = [
   {
     to: "/dashboard/chat",
     icon: IconMessageChatbot,
+    translationKey: "chat",
     sidebarLabel: "Chat",
     mobileLabel: "Ver mi conversación",
     greeting: "¿En qué más puedo ayudarte hoy?",
@@ -50,6 +55,7 @@ export const NAV_ITEMS = [
   {
     to: "/dashboard/budget",
     icon: IconChartPie,
+    translationKey: "budget",
     sidebarLabel: "Budget",
     mobileLabel: "Ver mi presupuesto",
     greeting:

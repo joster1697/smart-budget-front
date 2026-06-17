@@ -8,8 +8,17 @@ import {
   setError,
 } from "../store/slices/chatSlice";
 import { ClientPayload, ServerPayload } from "../types/chat";
-import { fetchAccounts, upsertAccount, removeAccount } from "../store/slices/accountsSlice";
-import { fetchTransactions, upsertTransaction, removeTransaction } from "../store/slices/transactionsSlice";
+import {
+  fetchAccounts,
+  upsertAccount,
+  removeAccount,
+} from "../store/slices/accountsSlice";
+import {
+  fetchTransactions,
+  upsertTransaction,
+  removeTransaction,
+} from "../store/slices/transactionsSlice";
+import { useTranslation } from "react-i18next";
 
 const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:3000/agent/chat";
 
@@ -19,12 +28,17 @@ let isConnecting = false;
 interface UseAgentChatReturn {
   sendMessage: (text: string) => void;
   confirmAction: (actionIndex: number) => void;
-  selectAction: (actionIndex: number, candidateIndex: number, candidateName?: string) => void;
+  selectAction: (
+    actionIndex: number,
+    candidateIndex: number,
+    candidateName?: string,
+  ) => void;
   clarifyAction: (actionIndex: number, text: string) => void;
   cancelActions: () => void;
 }
 
 export function useAgentChat(initConnection = false): UseAgentChatReturn {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const token = useAppSelector((state) => state.auth.token);
 
@@ -55,7 +69,7 @@ export function useAgentChat(initConnection = false): UseAgentChatReturn {
                 sender: "agent",
                 text: data.payload.message,
                 timestamp: new Date().toISOString(),
-              })
+              }),
             );
             break;
           case "THINKING":
@@ -73,17 +87,24 @@ export function useAgentChat(initConnection = false): UseAgentChatReturn {
                 sender: "agent",
                 text: data.payload.message,
                 timestamp: new Date().toISOString(),
-              })
+              }),
             );
             dispatch(setPendingActions([]));
 
             if (data.payload.data) {
-              const { accounts, transactions, deletedAccountId, deletedTransactionId } = data.payload.data;
+              const {
+                accounts,
+                transactions,
+                deletedAccountId,
+                deletedTransactionId,
+              } = data.payload.data;
               if (accounts && accounts.length > 0) {
                 accounts.forEach((acc: any) => dispatch(upsertAccount(acc)));
               }
               if (transactions && transactions.length > 0) {
-                transactions.forEach((tx: any) => dispatch(upsertTransaction(tx)));
+                transactions.forEach((tx: any) =>
+                  dispatch(upsertTransaction(tx)),
+                );
               }
               if (deletedAccountId) {
                 dispatch(removeAccount(deletedAccountId));
@@ -105,7 +126,7 @@ export function useAgentChat(initConnection = false): UseAgentChatReturn {
                 sender: "agent",
                 text: `Error: ${data.payload.message}`,
                 timestamp: new Date().toISOString(),
-              })
+              }),
             );
             break;
           default:
@@ -163,10 +184,10 @@ export function useAgentChat(initConnection = false): UseAgentChatReturn {
         globalSocket.send(JSON.stringify(payload));
       } else {
         console.error("WebSocket is not connected");
-        dispatch(setError("No hay conexión con el asistente."));
+        dispatch(setError(t("chat.noConnection")));
       }
     },
-    [dispatch]
+    [dispatch, t],
   );
 
   const sendMessage = useCallback(
@@ -179,12 +200,12 @@ export function useAgentChat(initConnection = false): UseAgentChatReturn {
           sender: "user",
           text,
           timestamp: new Date().toISOString(),
-        })
+        }),
       );
       dispatch(setThinking(true));
       sendPayload({ type: "MESSAGE", payload: { text } });
     },
-    [dispatch, sendPayload]
+    [dispatch, sendPayload],
   );
 
   const confirmAction = useCallback(
@@ -193,15 +214,15 @@ export function useAgentChat(initConnection = false): UseAgentChatReturn {
         addMessage({
           id: Math.random().toString(36).substring(2, 11),
           sender: "user",
-          text: "Confirmar acción",
+          text: t("chat.confirmAction"),
           timestamp: new Date().toISOString(),
-        })
+        }),
       );
       dispatch(setThinking(true));
       dispatch(setPendingActions([]));
       sendPayload({ type: "CONFIRM", payload: { actionIndex } });
     },
-    [dispatch, sendPayload]
+    [dispatch, sendPayload, t],
   );
 
   const selectAction = useCallback(
@@ -210,15 +231,18 @@ export function useAgentChat(initConnection = false): UseAgentChatReturn {
         addMessage({
           id: Math.random().toString(36).substring(2, 11),
           sender: "user",
-          text: `Seleccioné: ${candidateName || `Opción ${candidateIndex + 1}`}`,
+          text: t("chat.selected", {
+            name:
+              candidateName || t("chat.option", { index: candidateIndex + 1 }),
+          }),
           timestamp: new Date().toISOString(),
-        })
+        }),
       );
       dispatch(setThinking(true));
       dispatch(setPendingActions([]));
       sendPayload({ type: "SELECT", payload: { actionIndex, candidateIndex } });
     },
-    [dispatch, sendPayload]
+    [dispatch, sendPayload, t],
   );
 
   const clarifyAction = useCallback(
@@ -227,21 +251,21 @@ export function useAgentChat(initConnection = false): UseAgentChatReturn {
       dispatch(setPendingActions([]));
       sendPayload({ type: "CLARIFY", payload: { actionIndex, text } });
     },
-    [dispatch, sendPayload]
+    [dispatch, sendPayload],
   );
 
   const cancelActions = useCallback(() => {
     dispatch(
-        addMessage({
-          id: Math.random().toString(36).substring(2, 11),
-          sender: "user",
-          text: "Cancelar acción",
-          timestamp: new Date().toISOString(),
-        })
+      addMessage({
+        id: Math.random().toString(36).substring(2, 11),
+        sender: "user",
+        text: t("chat.cancelAction"),
+        timestamp: new Date().toISOString(),
+      }),
     );
     dispatch(setPendingActions([]));
     sendPayload({ type: "CANCEL" });
-  }, [dispatch, sendPayload]);
+  }, [dispatch, sendPayload, t]);
 
   return {
     sendMessage,
@@ -251,4 +275,3 @@ export function useAgentChat(initConnection = false): UseAgentChatReturn {
     cancelActions,
   };
 }
-

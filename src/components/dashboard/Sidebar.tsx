@@ -3,10 +3,12 @@ import { IconLogout } from "@tabler/icons-react";
 import { NAV_ITEMS } from "../../constants/navigation";
 import { useAppDispatch } from "../../store/hooks";
 import { logout } from "../../store/slices/authSlice";
-
+import LanguageSelector from "../ui/LanguageSelector";
+import { useTranslation } from "react-i18next";
 export default function Sidebar() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     dispatch(logout());
@@ -23,11 +25,15 @@ export default function Sidebar() {
         <p className="text-xs text-white/50 font-medium mt-1">
           Financial Sanctuary
         </p>
+        {/* Selector de idioma colocado debajo de la descripción */}
+        <div className="mt-4 border-t border-white/10 pt-4">
+          <LanguageSelector />
+        </div>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 mt-4 flex flex-col gap-2 px-4">
-        {NAV_ITEMS.map(({ to, icon: Icon, sidebarLabel }) => (
+        {NAV_ITEMS.map(({ to, icon: Icon, translationKey }) => (
           <NavLink
             key={to}
             to={to}
@@ -40,7 +46,7 @@ export default function Sidebar() {
             }
           >
             <Icon size={20} />
-            {sidebarLabel}
+            {t(`sidebar.${translationKey}`)}
           </NavLink>
         ))}
       </nav>
@@ -70,7 +76,7 @@ export default function Sidebar() {
           className="flex items-center gap-3 text-white/50 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider w-full cursor-pointer"
         >
           <IconLogout size={18} />
-          Cerrar Sesión
+          {t(`sidebar.${"logout"}`)}
         </button>
       </div>
     </aside>

@@ -4,8 +4,10 @@ import AIChatBubble from "../../components/dashboard/AIChatBubble";
 import UserChatBubble from "../../components/dashboard/UserChatBubble";
 import ActionInlineButtons from "../../components/dashboard/ActionInlineButtons";
 import { IconLoader2 } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 
 export default function Chat() {
+  const { t } = useTranslation();
   const { messages, isThinking, pendingActions } = useAppSelector((state) => state.chat);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -20,7 +22,7 @@ export default function Chat() {
         {/* Empty state if no messages */}
         {messages.length === 0 && !isThinking && (
           <div className="flex flex-col items-center justify-center h-full text-on-surface-variant/60">
-            <p className="text-lg font-medium">Comienza a chatear con Fynkro</p>
+            <p className="text-lg font-medium">{t("chat.startChat")}</p>
           </div>
         )}
 
@@ -57,7 +59,7 @@ export default function Chat() {
               <IconLoader2 size={24} className="animate-spin text-on-surface-variant" />
             </div>
             <div className="bg-surface-container-lowest rounded-2xl rounded-tl-sm p-4 shadow-sm border border-outline-variant/20 flex items-center h-12">
-               <span className="text-sm font-medium text-on-surface-variant animate-pulse">Escribiendo...</span>
+               <span className="text-sm font-medium text-on-surface-variant animate-pulse">{t("chat.thinking")}</span>
             </div>
           </div>
         )}

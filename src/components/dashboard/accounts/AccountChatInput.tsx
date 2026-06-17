@@ -1,6 +1,9 @@
 import { IconSend, IconPlus } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 
 export default function AccountChatInput() {
+  const { t } = useTranslation();
+
   return (
     <div className="mt-8 mb-4">
       <div className="w-full bg-[#fcfcfc] rounded-xl border border-outline-variant/30 p-2 flex items-center gap-3 relative shadow-sm">
@@ -9,7 +12,7 @@ export default function AccountChatInput() {
         </button>
         <input 
           type="text" 
-          placeholder="Ask Vault AI to analyze trends or adjust settings..." 
+          placeholder={t("chat.vaultAiPlaceholder")} 
           className="flex-1 bg-transparent outline-none text-[#1B252D] font-medium placeholder:text-[#a0a5a1] text-[15px]"
         />
         <button className="w-11 h-11 rounded-lg bg-[#2ae574] flex items-center justify-center shrink-0 text-[#1B252D] shadow-sm hover:brightness-110 transition-all">

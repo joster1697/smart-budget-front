@@ -25,8 +25,12 @@ import {
   IconBrain,
 } from "@tabler/icons-react";
 import { setCredentials } from "../store/slices/authSlice";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n";
+import LanguageSelector from "../components/ui/LanguageSelector";
 
 export default function Register() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [serverError, setServerError] = useState<string | null>(null);
@@ -61,10 +65,10 @@ export default function Register() {
         );
         navigate("/dashboard");
       } else {
-        setServerError("El Usuario ya existe");
+        setServerError(t("auth.register.userExists") || "El Usuario ya existe");
       }
     } catch {
-      setServerError("Error al conectar con el servidor");
+      setServerError(t("auth.login.serverError"));
     }
   };
 
@@ -86,11 +90,19 @@ export default function Register() {
             {import.meta.env.VITE_APP_NAME}
           </h2>
           <h1 className="text-inverse-on-surface text-5xl lg:text-7xl leading-[1.1] font-black mb-8 tracking-[-0.033em]">
-            Crea tu <br /> <span className="text-primary">Cuenta</span>
-            <br /> Financiera.
+            {i18n.language.startsWith("es") ? (
+              <>
+                Crea tu <br /> <span className="text-primary">Cuenta</span>
+                <br /> Financiera.
+              </>
+            ) : (
+              <>
+                Create Your <br /> Financial <span className="text-primary">Account</span>.
+              </>
+            )}
           </h1>
           <h3 className="text-[#96c5a9] max-w-md text-xl leading-relaxed">
-            Únete a SmartBudget hoy y comienza a dominar tu arquitectura financiera con precisión.
+            {t("auth.register.subSlogan")}
           </h3>
         </div>
         <div className="relative z-10 mt-12 md:mt-0">
@@ -100,10 +112,10 @@ export default function Register() {
             </div>
             <div>
               <p className="text-surface-bright font-bold text-base">
-                Gestión Inteligente
+                {t("auth.login.intelligenceTitle")}
               </p>
               <p className="text-[#96c5a9] text-sm">
-                Tu plataforma de confianza para organizar y optimizar todas tus finanzas.
+                {t("auth.login.intelligenceDesc")}
               </p>
             </div>
           </div>
@@ -112,9 +124,9 @@ export default function Register() {
 
       {/* Panel derecho con formulario */}
       <div className="relative w-full flex gap-9 p-6 md:p-14 justify-center items-center md:bg-surface-container-lowest">
-        {/* Botones de ayuda e idioma — anclados al panel derecho */}
-        <div className="absolute top-6 right-6 flex gap-2 md:flex">
-          {/* Estos botones pueden estar ocultos en mobile si lo prefieres */}
+        {/* Botones de ayuda e idioma — anclados al panel derecho (visible solo en escritorio/tablet) */}
+        <div className="hidden md:flex absolute top-6 right-6 gap-2 items-center">
+          <LanguageSelector />
         </div>
 
         <div className="w-full flex flex-col max-w-[448px] gap-9">
@@ -129,11 +141,11 @@ export default function Register() {
             <div className="text-center md:text-left">
               <h1 className="font-black tracking-tight text-4xl text-on-surface mb-3">
                 <span className="md:hidden uppercase">{import.meta.env.VITE_APP_NAME}</span>
-                <span className="hidden md:inline">Crear Cuenta</span>
+                <span className="hidden md:inline">{t("auth.register.title")}</span>
               </h1>
               <p className="text-lg text-on-surface-variant">
-                <span className="md:hidden">Comienza tu viaje financiero hoy mismo.</span>
-                <span className="hidden md:inline">Registrate para acceder a tu santuario financiero.</span>
+                <span className="md:hidden">{t("auth.register.welcomeMobile")}</span>
+                <span className="hidden md:inline">{t("auth.register.welcomeDesktop")}</span>
               </p>
             </div>
           </div>
@@ -147,8 +159,8 @@ export default function Register() {
                 <InputField
                   id="name"
                   type="text"
-                  label="Nombre Completo"
-                  placeholder="Ej: Juan Alvarez"
+                  label={t("auth.register.nameLabel")}
+                  placeholder={t("auth.register.namePlaceholder")}
                   error={errors.name?.message}
                   leftIcon={
                     <UserIcon size={20} className="text-outline-variant" />
@@ -159,9 +171,9 @@ export default function Register() {
                 <InputField
                   id="email"
                   type="email"
-                  label="Correo Electrónico"
+                  label={t("auth.register.emailLabel")}
                   error={errors.email?.message}
-                  placeholder="nombre@ejemplo.com"
+                  placeholder={t("auth.register.emailPlaceholder")}
                   leftIcon={
                     <MailIcon size={20} className="text-outline-variant" />
                   }
@@ -171,9 +183,9 @@ export default function Register() {
                 <InputField
                   id="password"
                   type="password"
-                  label="Contraseña"
+                  label={t("auth.register.passwordLabel")}
                   error={errors.password?.message}
-                  placeholder="Cree una contraseña segura"
+                  placeholder={t("auth.register.passwordPlaceholder")}
                   leftIcon={
                     <LockIcon size={20} className="text-outline-variant" />
                   }
@@ -226,9 +238,9 @@ export default function Register() {
                 <InputField
                   id="confirmPassword"
                   type="password"
-                  label="Confirmar Contraseña"
+                  label={i18n.language.startsWith("es") ? "Confirmar Contraseña" : "Confirm Password"}
                   error={errors.confirmPassword?.message}
-                  placeholder="Confirma tu contraseña"
+                  placeholder={i18n.language.startsWith("es") ? "Confirma tu contraseña" : "Confirm your password"}
                   leftIcon={
                     <LockIcon size={20} className="text-outline-variant" />
                   }
@@ -249,21 +261,43 @@ export default function Register() {
                     className="mt-1"
                   />
                   <span className="text-on-surface-variant">
-                    Acepto los{" "}
-                    <a
-                      href="#"
-                      className="text-primary font-semibold hover:underline"
-                    >
-                      Términos de Servicio
-                    </a>{" "}
-                    y la{" "}
-                    <a
-                      href="#"
-                      className="text-primary font-semibold hover:underline"
-                    >
-                      Política de Privacidad
-                    </a>{" "}
-                    de SmartBudget
+                    {i18n.language.startsWith("es") ? (
+                      <>
+                        Acepto los{" "}
+                        <a
+                          href="#"
+                          className="text-primary font-semibold hover:underline"
+                        >
+                          Términos de Servicio
+                        </a>{" "}
+                        y la{" "}
+                        <a
+                          href="#"
+                          className="text-primary font-semibold hover:underline"
+                        >
+                          Política de Privacidad
+                        </a>{" "}
+                        de SmartBudget
+                      </>
+                    ) : (
+                      <>
+                        I accept the{" "}
+                        <a
+                          href="#"
+                          className="text-primary font-semibold hover:underline"
+                        >
+                          Terms of Service
+                        </a>{" "}
+                        and the{" "}
+                        <a
+                          href="#"
+                          className="text-primary font-semibold hover:underline"
+                        >
+                          Privacy Policy
+                        </a>{" "}
+                        of SmartBudget
+                      </>
+                    )}
                   </span>
                 </div>
 
@@ -277,7 +311,7 @@ export default function Register() {
                     <IconArrowRight size={24} className="text-on-primary" />
                   }
                 >
-                  Crear Cuenta
+                  {t("auth.register.submitBtn")}
                 </Button>
               </div>
             </form>
@@ -285,15 +319,20 @@ export default function Register() {
 
           <div className="text-center">
             <p className="text-base text-on-surface-variant">
-              ¿Ya tienes una cuenta?{" "}
+              {t("auth.register.alreadyHaveAccount")}{" "}
               <button
                 type="button"
                 className="ml-1 font-black text-primary cursor-pointer hover:underline"
                 onClick={() => navigate("/login")}
               >
-                Inicia Sesión
+                {t("auth.register.loginBtn")}
               </button>
             </p>
+          </div>
+
+          {/* Selector de idioma — visible solo en móvil, centrado al final */}
+          <div className="flex md:hidden flex-col items-center gap-4 mt-4 pt-6 border-t border-on-surface-variant/10 w-full">
+            <LanguageSelector />
           </div>
         </div>
       </div>
