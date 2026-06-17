@@ -67,7 +67,7 @@ export default function Sidebar() {
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 text-white/50 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider w-full"
+          className="flex items-center gap-3 text-white/50 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider w-full cursor-pointer"
         >
           <IconLogout size={18} />
           Cerrar Sesión

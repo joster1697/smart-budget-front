@@ -1,0 +1,18 @@
+{
+  "sidebar": {
+    "home": "Inicio",
+    "dashboard": "Panel de Control",
+    "transactions": "Transacciones",
+    "budgets": "Presupuestos",
+    "reports": "Informes",
+    "settings": "Configuración",
+    "help": "Ayuda y Soporte"
+  },
+  "footer": {
+    "rights": "Todos los derechos reservados."
+  },
+  "language": {
+    "es": "Español",
+    "en": "Inglés"
+  }
+}

@@ -21,7 +21,6 @@ import {
   IconTrash,
   IconDotsVertical,
 } from "@tabler/icons-react";
-import ActivityItem from "../../components/dashboard/ActivityItem";
 import TransactionCard from "../../components/dashboard/TransactionCard";
 import { formatDueDate } from "./Home";
 
