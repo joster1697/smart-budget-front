@@ -45,6 +45,36 @@ const transactionService = {
       `/transactions${queryString ? `?${queryString}` : ""}`,
     );
   },
+  //create a new transaction
+  createTransaction: (data: {
+    amount: number;
+    type: "income" | "expense" | "transfer";
+    description: string;
+    date: string;
+    category_id?: string;
+    account_id?: string;
+  }) => {
+    return api.post<{ message: string; transaction: TransactionResponse }>(
+      "/transactions",
+      data,
+    );
+  },
+  //delete an existing transaction
+  deleteTransaction: (id: string) => {
+    return api.delete<{ message: string }>(`/transactions/${id}`);
+  },
+  //update an existing transaction
+  updateTransaction: (
+    id: string,
+    data: Partial<{
+      amount: number;
+      type: "income" | "expense" | "transfer";
+      description: string;
+      date: string;
+      category_id: string;
+      account_id: string;
+    }>,
+  ) => api.put<TransactionResponse>(`/transactions/${id}`, data),
 };
 
 export default transactionService;

@@ -14,10 +14,17 @@ import {
 import AIChatBubble from "../../components/dashboard/AIChatBubble";
 import AccountCard from "../../components/dashboard/AccountCard";
 import ActivityItem from "../../components/dashboard/ActivityItem";
-import PaymentCard from "../../components/dashboard/PaymentCard";
+import PaymentCard from "../../components/dashboard/TransactionCard";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useNavigate } from "react-router-dom";
 import { fetchTransactions } from "../../store/slices/transactionsSlice";
+import type { Transaction } from "../../store/slices/transactionsSlice";
+import transactionService from "../../services/transactionService";
+
+export const formatDueDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return `Vence a las ${date.toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" })} `;
+};
 
 export default function Home() {
   const dispatch = useAppDispatch();
@@ -27,6 +34,9 @@ export default function Home() {
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null,
   );
+  //State for upcoming payments
+  const [upcomingPayments, setUpcomingPayments] = useState<Transaction[]>([]);
+  const [loadingUpcoming, setLoadingUpcoming] = useState(true);
 
   useEffect(() => {
     if (accounts.length > 0 && !selectedAccountId) {
@@ -37,6 +47,57 @@ export default function Home() {
   useEffect(() => {
     dispatch(fetchTransactions({ limit: 10 }));
   }, [dispatch]);
+
+  // useEffect(() => {
+  //   setLoadingUpcoming(true);
+  //   const fetchUpcoming = async () => {
+  //     try {
+  //       const today = new Date().toISOString();
+  //       const response = await transactionService.getTransactions({
+  //         from: today,
+  //         type: "expense",
+  //         limit: 5,
+  //       });
+  //       setUpcomingPayments(response.transactions || []);
+  //     } catch (error) {
+  //       console.error("Error al obtener los datos", error);
+  //     } finally {
+  //       setLoadingUpcoming(false);
+  //     }
+  //   };
+  //   fetchUpcoming();
+  // }, [transactions]);
+
+  useEffect(() => {
+    setLoadingUpcoming(true);
+    const fetchUpcoming = async () => {
+      try {
+        // 1. Solicitamos los gastos al servidor (sin mandar el filtro 'from')
+        const response = await transactionService.getTransactions({
+          type: "expense",
+          limit: 50, // Traemos un límite alto para tener de dónde filtrar
+        });
+
+        console.log("🔍 Gastos recibidos del servidor:", response.transactions);
+
+        // 2. Filtramos en JavaScript las transacciones cuya fecha sea posterior a "ahora"
+        const now = new Date();
+        const futurePayments = (response.transactions || []).filter(
+          (payment) => new Date(payment.date) > now,
+        );
+
+        console.log("🔍 Pagos futuros filtrados en el Front:", futurePayments);
+
+        // 3. Guardamos solo los primeros 5 pagos futuros
+        setUpcomingPayments(futurePayments.slice(0, 5));
+      } catch (error) {
+        console.error("❌ Error al obtener los datos:", error);
+      } finally {
+        setLoadingUpcoming(false);
+      }
+    };
+    fetchUpcoming();
+  }, [transactions]);
 
   const formatTxCurrency = (value: number) =>
     new Intl.NumberFormat("es-CR", {
@@ -89,6 +150,20 @@ export default function Home() {
     }
     return <IconCash size={20} className="text-on-surface-variant" />;
   };
+
+  const getDay = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.getDate().toString().padStart(2, "0");
+  };
+
+  const getMonthAbbreviation = (dateString: string) => {
+    const date = new Date(dateString);
+    return date
+      .toLocaleDateString("es-CR", { month: "short" })
+      .replace(".", "")
+      .toUpperCase();
+  };
+
   return (
     <section className="flex flex-col gap-6">
       {/* Greeting Card */}
@@ -146,39 +221,43 @@ export default function Home() {
             <h2 className="text-[22px] font-black tracking-tight text-[#001f26] font-manrope">
               Actividad Reciente
             </h2>
-            <div className="space-y-5">
-              {transactions.length > 0 ? (
-                transactions.map((transaction) => {
-                  const isIncome = transaction.type === "income";
-                  return (
-                    <ActivityItem
-                      key={transaction.id}
-                      icon={
-                        isIncome ? (
-                          <IconCash size={20} />
-                        ) : (
-                          getCategoryIcon(transaction.category?.name)
-                        )
-                      }
-                      title={transaction.description || "Transaction"}
-                      date={formatTxDate(transaction.date)}
-                      amount={formatTxCurrency(transaction.amount)}
-                      isNegative={!isIncome}
-                      iconBgClass={
-                        isIncome ? "bg-primary-container/40" : undefined
-                      }
-                    />
-                  );
-                })
-              ) : (
-                <div className="text-center py-6 text-sm text-gray-500">
-                  No hay transacciones reciente
-                </div>
-              )}
-            </div>
           </div>
+          <div className="space-y-5">
+            {transactions.length > 0 ? (
+              transactions.map((transaction) => {
+                const isIncome = transaction.type === "income";
+                return (
+                  <ActivityItem
+                    key={transaction.id}
+                    icon={
+                      isIncome ? (
+                        <IconCash size={20} />
+                      ) : (
+                        getCategoryIcon(transaction.category?.name)
+                      )
+                    }
+                    title={transaction.description || "Transaction"}
+                    date={formatTxDate(transaction.date)}
+                    amount={formatTxCurrency(transaction.amount)}
+                    isNegative={!isIncome}
+                    iconBgClass={
+                      isIncome ? "bg-primary-container/40" : undefined
+                    }
+                  />
+                );
+              })
+            ) : (
+              <div className="text-center py-6 text-sm text-gray-500">
+                No hay transacciones reciente
+              </div>
+            )}
+          </div>
+
           <div className="mt-6 text-center">
-            <button className="text-[13px] font-bold text-[#005226] hover:opacity-80">
+            <button
+              onClick={() => navigate("/dashboard/transactions")}
+              className="text-[13px] font-bold text-[#005226] hover:opacity-80 cursor-pointer"
+            >
               Ver toda la actividad &gt;
             </button>
           </div>
@@ -192,37 +271,34 @@ export default function Home() {
             </h2>
             <IconCalendarEvent size={22} className="text-[#005226]" />
           </div>
-          <div className="space-y-3">
-            <PaymentCard
-              day="15"
-              month="OCT"
-              title="Tarjeta de Crédito Oro"
-              amount="₡12,400.00"
-            />
-            <PaymentCard
-              day="18"
-              month="OCT"
-              title="Seguro de Auto"
-              amount="₡3,200.00"
-            />
-            <PaymentCard
-              day="22"
-              month="OCT"
-              title="Mantenimiento Depto"
-              amount="₡1,500.00"
-            />
-            <PaymentCard
-              day="01"
-              month="NOV"
-              title="Hipoteca"
-              amount="₡18,000.00"
-            />
-            <PaymentCard
-              day="05"
-              month="NOV"
-              title="Colegiatura"
-              amount="₡8,500.00"
-            />
+          <div className="flex flex-col gap-3">
+            {loadingUpcoming ? (
+              <div className="text-center py-6 text-sm text-gray-500 font-medium animate-pulse">
+                Cargando próximos pagos...
+              </div>
+            ) : upcomingPayments.length > 0 ? (
+              upcomingPayments.map((payment) => (
+                <PaymentCard
+                  key={payment.id}
+                  day={getDay(payment.date)}
+                  month={getMonthAbbreviation(payment.date)}
+                  title={payment.description || "Pago Programado"}
+                  amount={formatTxCurrency(payment.amount)}
+                  icon={getCategoryIcon(payment.category?.name)}
+                  isNegative={payment.type === "expense"}
+                  subtitle={formatDueDate(payment.date)}
+                />
+              ))
+            ) : (
+              <div className="text-center py-8 px-4 border border-dashed border-[#005226]/20 rounded-2xl bg-surface-variant/10">
+                <p className="text-sm text-on-surface-variant font-bold mb-1">
+                  ¡Todo al día!
+                </p>
+                <p className="text-xs text-on-surface-variant/70">
+                  No tienes pagos programados próximamente.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
