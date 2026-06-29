@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { IconLogout } from "@tabler/icons-react";
 import { NAV_ITEMS } from "../../constants/navigation";
 import { useAppDispatch } from "../../store/hooks";
@@ -7,10 +7,21 @@ import { logout } from "../../store/slices/authSlice";
 export default function Sidebar() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const isGuided = searchParams.get("guided") === "true";
 
   const handleLogout = () => {
     dispatch(logout());
     navigate("/login");
+  };
+
+  const isItemActive = (to: string, isActive: boolean) => {
+    if (isGuided) {
+      return to === "/dashboard/budget";
+    }
+    return isActive;
   };
 
   return (
@@ -31,13 +42,14 @@ export default function Sidebar() {
           <NavLink
             key={to}
             to={to}
-            className={({ isActive }) =>
-              `flex items-center gap-4 px-4 py-3 rounded-xl transition-colors font-medium text-sm ${
-                isActive
+            className={({ isActive }) => {
+              const active = isItemActive(to, isActive);
+              return `flex items-center gap-4 px-4 py-3 rounded-xl transition-colors font-medium text-sm ${
+                active
                   ? "bg-[#00210c] text-[#38e07b]"
                   : "text-white/60 hover:text-white hover:bg-white/5"
-              }`
-            }
+              }`;
+            }}
           >
             <Icon size={20} />
             {sidebarLabel}

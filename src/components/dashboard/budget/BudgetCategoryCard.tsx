@@ -1,4 +1,5 @@
 import { use } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   IconToolsKitchen2,
   IconCar,
@@ -8,8 +9,13 @@ import {
   IconChartPie,
   IconArrowUp,
   IconArrowDown,
+  IconPigMoney,
+  IconTrash,
+  IconArrowBackUp,
+  IconCreditCard,
 } from "@tabler/icons-react";
 import { BudgetContext } from "./BudgetContext";
+import { Debt } from "../../../services/debtService";
 
 export interface BudgetCategoryData {
   id: string;
@@ -19,15 +25,30 @@ export interface BudgetCategoryData {
   spent_amount: number;
   usage_percentage: number;
   is_exceeded: boolean;
+  isMarkedForDeletion?: boolean;
+  isUnbudgeted?: boolean;
 }
 
 interface BudgetCategoryCardProps {
   category: BudgetCategoryData;
 }
 
-const getCategoryIcon = (name: string) => {
+const getCategoryIcon = (id: string, name: string, debts: Debt[] = []) => {
   const lowerName = name.toLowerCase();
   const iconSize = 20;
+
+  // Check if it matches any debt
+  const isDebt = (id && debts.some(d => d.category_id === id)) ||
+                 debts.some(d => d.name.toLowerCase() === lowerName) || 
+                 lowerName.includes("deuda") || 
+                 lowerName.includes("préstamo") || 
+                 lowerName.includes("prestamo") || 
+                 lowerName.includes("crédito") || 
+                 lowerName.includes("credito") || 
+                 lowerName.includes("tarjeta");
+
+  if (isDebt) return <IconCreditCard size={iconSize} className="text-[#e11d48]" />; // Rose-600
+  if (lowerName.includes("ahorro")) return <IconPigMoney size={iconSize} className="text-[#008f43]" />;
   if (lowerName.includes("aliment") || lowerName.includes("comida")) return <IconToolsKitchen2 size={iconSize} className="text-[#005226]" />;
   if (lowerName.includes("transport") || lowerName.includes("auto")) return <IconCar size={iconSize} className="text-[#005226]" />;
   if (lowerName.includes("vivienda") || lowerName.includes("hogar")) return <IconHome size={iconSize} className="text-[#005226]" />;
@@ -37,12 +58,13 @@ const getCategoryIcon = (name: string) => {
 };
 
 export default function BudgetCategoryCard({ category }: BudgetCategoryCardProps) {
+  const navigate = useNavigate();
   const context = use(BudgetContext);
   if (!context) return null;
 
   const { state, actions } = context;
-  const { canEdit, isActive, plannedIncome } = state;
-  const { handleCategoryAllocationChange, formatCurrency } = actions;
+  const { canEdit, isActive, plannedIncome, debts, savingsGoals } = state;
+  const { handleCategoryAllocationChange, formatCurrency, handleRemoveCategory, handleRestoreCategory } = actions;
 
   const handleRangeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleCategoryAllocationChange(category.id, Number(e.target.value));
@@ -52,16 +74,58 @@ export default function BudgetCategoryCard({ category }: BudgetCategoryCardProps
     handleCategoryAllocationChange(category.id, Number(e.target.value));
   };
 
+  const isSavingCategory = category.name.toLowerCase().includes("ahorro");
+  const isDebtCategory = (category.id && debts.some(d => d.category_id === category.id)) ||
+                         debts.some(d => d.name.toLowerCase() === category.name.toLowerCase()) || 
+                         category.name.toLowerCase().includes("deuda") || 
+                         category.name.toLowerCase().includes("préstamo") || 
+                         category.name.toLowerCase().includes("prestamo") || 
+                         category.name.toLowerCase().includes("crédito") || 
+                         category.name.toLowerCase().includes("credito") || 
+                         category.name.toLowerCase().includes("tarjeta");
+
+  const matchedGoal = savingsGoals?.find(g => `ahorro: ${g.name}`.toLowerCase() === category.name.toLowerCase());
+  const matchedDebt = debts?.find(d => (category.id && d.category_id === category.id) || d.name.toLowerCase() === category.name.toLowerCase());
+
+  const handleCardClick = () => {
+    if (isSavingCategory && matchedGoal) {
+      navigate(`/dashboard/savings?id=${matchedGoal.id}&guided=true`);
+    } else if (isDebtCategory && matchedDebt) {
+      navigate(`/dashboard/debts?id=${matchedDebt.id}&guided=true`);
+    }
+  };
+
   return (
-    <div className={`flex flex-col justify-between bg-surface-container-lowest rounded-2xl rounded-tl-sm p-3 sm:p-4.5 shadow-sm border transition-all duration-300 ${canEdit ? 'border-[#005226]/30 bg-surface-container-low/20 shadow-md scale-[1.01]' : 'border-outline-variant/20'}`}>
+    <div className={`flex flex-col justify-between rounded-2xl rounded-tl-sm p-3 sm:p-4.5 shadow-sm border transition-all duration-300 
+      ${category.isMarkedForDeletion
+        ? "bg-error-container/5 border-error/20 shadow-sm border-l-4 border-l-error/40 opacity-70"
+        : isSavingCategory 
+          ? "bg-emerald-50/50 border-emerald-500/20 shadow-sm border-l-4 border-l-emerald-500" 
+          : isDebtCategory
+            ? "bg-rose-50/50 border-rose-500/20 shadow-sm border-l-4 border-l-rose-500"
+            : "bg-surface-container-lowest border-outline-variant/20"
+      } 
+      ${canEdit && !category.isMarkedForDeletion ? "border-[#005226]/30 bg-surface-container-low/20 shadow-md scale-[1.01]" : ""}`}>
       <div className="flex flex-col mb-1.5 sm:mb-3">
         <div className="flex flex-row justify-between items-center gap-2 w-full">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+          <div 
+            onClick={handleCardClick}
+            className={`flex items-center gap-2 sm:gap-3 min-w-0 flex-1 ${
+              (isSavingCategory && matchedGoal) || (isDebtCategory && matchedDebt) 
+                ? "cursor-pointer hover:opacity-80 transition-opacity" 
+                : ""
+            }`}
+          >
             <div className="bg-primary-container/30 p-1.5 sm:p-2 rounded-xl shrink-0">
-              {getCategoryIcon(category.name)}
+              {getCategoryIcon(category.id, category.name, debts)}
             </div>
             <div className="min-w-0 flex-1">
-              <h4 className="font-bold text-sm sm:text-lg text-on-surface line-clamp-2 break-words" title={category.name}>{category.name}</h4>
+              <h4 className={`font-bold text-sm sm:text-lg text-on-surface line-clamp-2 break-words ${category.isMarkedForDeletion ? "line-through text-outline/80" : ""}`} title={category.name}>{category.name}</h4>
+              {((isSavingCategory && matchedGoal) || (isDebtCategory && matchedDebt)) && (
+                <span className="text-[9px] text-[#008f43] dark:text-[#38e07b] font-bold block hover:underline">
+                  Ver Análisis →
+                </span>
+              )}
             </div>
           </div>
 
@@ -72,9 +136,40 @@ export default function BudgetCategoryCard({ category }: BudgetCategoryCardProps
                 type="number"
                 value={category.allocated_amount || ""}
                 onChange={handleInputChange}
-                className="w-20 sm:w-24 bg-surface-container border border-outline-variant/30 rounded-lg px-2 py-0.5 sm:py-1 text-right text-xs sm:text-sm text-on-surface font-bold focus:outline-none focus:ring-1 focus:ring-[#005226]"
+                disabled={category.isMarkedForDeletion}
+                className={`w-20 sm:w-24 bg-surface-container border border-outline-variant/30 rounded-lg px-2 py-0.5 sm:py-1 text-right text-xs sm:text-sm text-on-surface font-bold focus:outline-none focus:ring-1 focus:ring-[#005226] ${
+                  category.isMarkedForDeletion ? "opacity-50 pointer-events-none" : ""
+                }`}
                 placeholder="0"
               />
+              {category.isMarkedForDeletion ? (
+                <button
+                  type="button"
+                  onClick={() => handleRestoreCategory(category.id)}
+                  className="p-1.5 text-outline hover:text-[#005226] hover:bg-[#005226]/10 rounded-lg transition-all duration-200 cursor-pointer border-none bg-transparent flex items-center justify-center shrink-0"
+                  title="Restablecer categoría"
+                >
+                  <IconArrowBackUp size={18} />
+                </button>
+              ) : category.isUnbudgeted ? (
+                <button
+                  type="button"
+                  disabled
+                  className="p-1.5 text-outline/30 cursor-not-allowed border-none bg-transparent flex items-center justify-center shrink-0"
+                  title="No se puede eliminar porque ya tiene transacciones registradas este mes"
+                >
+                  <IconTrash size={18} />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => handleRemoveCategory(category.id)}
+                  className="p-1.5 text-outline hover:text-error hover:bg-error/10 rounded-lg transition-all duration-200 cursor-pointer border-none bg-transparent flex items-center justify-center shrink-0"
+                  title="Eliminar del presupuesto"
+                >
+                  <IconTrash size={18} />
+                </button>
+              )}
             </div>
           ) : (
             <div className="text-right shrink-0 whitespace-nowrap">
@@ -109,7 +204,8 @@ export default function BudgetCategoryCard({ category }: BudgetCategoryCardProps
             step="1000"
             value={category.allocated_amount}
             onChange={handleRangeChange}
-            className="budget-slider cursor-pointer"
+            disabled={category.isMarkedForDeletion}
+            className={`budget-slider cursor-pointer ${category.isMarkedForDeletion ? "opacity-50 pointer-events-none" : ""}`}
           />
         </div>
       ) : (

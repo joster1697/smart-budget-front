@@ -6,6 +6,7 @@ import {
   IconPlus,
   IconLock,
   IconLockOpen,
+  IconPigMoney,
 } from "@tabler/icons-react";
 import AIChatBubble from "../../components/dashboard/AIChatBubble";
 import { budgetService, BudgetStatus, BudgetCategoryInput } from "../../services/budgetService";
@@ -17,6 +18,11 @@ import CategoryFormModal from "../../components/dashboard/budget/CategoryFormMod
 import SaveBudgetBanner from "../../components/dashboard/budget/SaveBudgetBanner";
 import Button from "../../components/ui/Button";
 import { BudgetContext } from "../../components/dashboard/budget/BudgetContext";
+import debtService, { Debt } from "../../services/debtService";
+import savingsService from "../../services/savingsService";
+import { SavingsGoal } from "../../types/savings";
+import CommitmentsSidebar from "../../components/dashboard/budget/CommitmentsSidebar";
+import BudgetWizardModal from "../../components/dashboard/budget/BudgetWizardModal";
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'CRC' }).format(amount);
@@ -53,6 +59,8 @@ export default function Budget() {
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [isCommitmentsOpen, setIsCommitmentsOpen] = useState(false);
 
   // Form states
   const [plannedIncome, setPlannedIncome] = useState<number>(0);
@@ -62,6 +70,14 @@ export default function Budget() {
 
   // Category creation state
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [selectedExistingCategoryId, setSelectedExistingCategoryId] = useState("");
+
+  // Debts and Savings states
+  const [debts, setDebts] = useState<Debt[]>([]);
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
+  const [loadingDebts, setLoadingDebts] = useState(false);
+  const [loadingSavings, setLoadingSavings] = useState(false);
+
 
   const monthYearStr = currentDate.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
   const periodStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
@@ -87,18 +103,79 @@ export default function Budget() {
         const data = response.budget;
         setBudget(data);
         setPlannedIncome(data.planned_income);
-        setBudgetCategories(data.categories.map(c => ({
-          category_id: c.category_id || "",
-          allocated_amount: c.allocated_amount
-        })));
+        setBudgetCategories(data.categories
+          .filter(c => !c.id?.startsWith("unbudgeted-"))
+          .map(c => ({
+            category_id: c.category_id || "",
+            allocated_amount: c.allocated_amount
+          }))
+        );
+        setIsWizardOpen(false);
       }
     } catch (err) {
       const error = err as Error & { statusCode?: number };
       if (error.statusCode === 404 || error.message?.toLowerCase().includes("not found")) {
         setBudget(null);
+        if (!isPastMonth) {
+          setIsWizardOpen(true);
+        }
       } else {
         setError(error.message || "Error al cargar el presupuesto");
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDebts = async () => {
+    setLoadingDebts(true);
+    try {
+      const response = await debtService.getDebts();
+      setDebts(Array.isArray(response.debts) ? response.debts : []);
+    } catch (err) {
+      console.error("Error fetching debts:", err);
+      setDebts([]);
+    } finally {
+      setLoadingDebts(false);
+    }
+  };
+
+  const fetchSavings = async () => {
+    setLoadingSavings(true);
+    try {
+      const response = await savingsService.getGoals();
+      setSavingsGoals(Array.isArray(response.goals) ? response.goals : []);
+    } catch (err) {
+      console.error("Error fetching savings goals:", err);
+      setSavingsGoals([]);
+    } finally {
+      setLoadingSavings(false);
+    }
+  };
+
+  const handleCloneBudget = async (prevPeriod: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await budgetService.getBudget(prevPeriod);
+      if (response && response.budget) {
+        const prevBudget = response.budget;
+        setPlannedIncome(prevBudget.planned_income);
+        setBudgetCategories(prevBudget.categories
+          .filter(c => !c.id?.startsWith("unbudgeted-"))
+          .map(c => ({
+            category_id: c.category_id || "",
+            allocated_amount: c.allocated_amount
+          }))
+        );
+        setHasUnsavedChanges(true);
+        setIsWizardOpen(false);
+      } else {
+        alert("No se encontró un presupuesto para el mes anterior.");
+      }
+    } catch (err) {
+      const error = err as Error;
+      alert(error.message || "Error al clonar el presupuesto anterior.");
     } finally {
       setLoading(false);
     }
@@ -117,9 +194,23 @@ export default function Budget() {
   useEffect(() => {
     fetchBudget();
     fetchCategories();
+    fetchDebts();
+    fetchSavings();
     setIsEditing(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [periodStr]);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("wizard") === "true") {
+      setIsWizardOpen(true);
+    }
+    if (searchParams.get("editing") === "true") {
+      setIsEditing(true);
+    }
+  }, []);
+
+
 
   const prevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
@@ -195,6 +286,36 @@ export default function Budget() {
     }
   };
 
+  const handleAddExistingCategory = () => {
+    if (!selectedExistingCategoryId) return;
+    setHasUnsavedChanges(true);
+    setBudgetCategories(prev => {
+      const exists = prev.some(c => c.category_id === selectedExistingCategoryId);
+      if (exists) return prev;
+      return [...prev, { category_id: selectedExistingCategoryId, allocated_amount: 0 }];
+    });
+    setSelectedExistingCategoryId("");
+    setIsCategoryModalOpen(false);
+  };
+
+  const handleRemoveCategory = (categoryId: string) => {
+    setHasUnsavedChanges(true);
+    setBudgetCategories(prev => prev.filter(c => c.category_id !== categoryId));
+  };
+
+  const handleRestoreCategory = (categoryId: string) => {
+    setHasUnsavedChanges(true);
+    const originalCat = budget?.categories.find(c => c.category_id === categoryId);
+    setBudgetCategories(prev => {
+      const exists = prev.some(c => c.category_id === categoryId);
+      if (exists) return prev;
+      return [...prev, {
+        category_id: categoryId,
+        allocated_amount: originalCat ? originalCat.allocated_amount : 0
+      }];
+    });
+  };
+
   const totalAllocatedInForm = budgetCategories.reduce((sum, cat) => sum + (cat.allocated_amount || 0), 0);
   const remainingToAllocate = plannedIncome - totalAllocatedInForm;
 
@@ -223,15 +344,32 @@ export default function Budget() {
     }
   };
 
-  const allCategoryIds = Array.from(new Set([
-    ...categories.map(c => c.id),
+  const isSaving = (name: string) => name.toLowerCase().includes("ahorro");
+
+  const isDebt = (categoryId: string, name: string) => {
+    if (categoryId && debts.some(d => d.category_id === categoryId)) return true;
+    const lowerName = name.toLowerCase();
+    return debts.some(d => d.name.toLowerCase() === lowerName) ||
+      lowerName.includes("deuda") ||
+      lowerName.includes("préstamo") ||
+      lowerName.includes("prestamo") ||
+      lowerName.includes("crédito") ||
+      lowerName.includes("credito") ||
+      lowerName.includes("tarjeta");
+  };
+
+  const displayCategoryIds = Array.from(new Set([
+    ...budgetCategories.map(c => c.category_id),
     ...(budget?.categories || []).map(c => c.category_id || "")
   ])).filter(id => id);
 
-  const displayCategories: BudgetCategoryData[] = allCategoryIds.map(id => {
+  const displayCategories: BudgetCategoryData[] = displayCategoryIds.map(id => {
     const baseCat = categories.find(c => c.id === id);
     const budgetCat = budget?.categories.find(c => c.category_id === id);
     const localCat = budgetCategories.find(c => c.category_id === id);
+
+    const isMarkedForDeletion = budgetCat !== undefined && !budgetCat.id?.startsWith("unbudgeted-") && localCat === undefined;
+    const isUnbudgeted = !!(budgetCat?.id?.startsWith("unbudgeted-") && localCat === undefined);
 
     return {
       id: id,
@@ -240,9 +378,11 @@ export default function Budget() {
       original_allocated_amount: budgetCat?.original_allocated_amount ?? 0,
       spent_amount: budgetCat?.spent_amount || 0,
       usage_percentage: budgetCat?.usage_percentage || 0,
-      is_exceeded: budgetCat?.is_exceeded || false
+      is_exceeded: budgetCat?.is_exceeded || false,
+      isMarkedForDeletion,
+      isUnbudgeted
     };
-  });
+  }).filter(c => !c.isUnbudgeted);
 
   const handleCategoryAllocationChange = (categoryId: string, amount: number) => {
     setHasUnsavedChanges(true);
@@ -292,6 +432,7 @@ export default function Budget() {
       hasUnsavedChanges,
       isEditing,
       newCategoryName,
+      selectedExistingCategoryId,
       monthYearStr,
       periodStr,
       isCurrentMonth,
@@ -303,18 +444,33 @@ export default function Budget() {
       isActive,
       canEdit,
       displayCategories,
+      debts,
+      savingsGoals,
+      loadingDebts,
+      loadingSavings,
+      isWizardOpen,
     },
     actions: {
       setCurrentDate,
       setPlannedIncome,
       setNewCategoryName,
+      setSelectedExistingCategoryId,
       setIsModalOpen,
       setIsCategoryModalOpen,
+      setIsWizardOpen,
       prevMonth,
       nextMonth,
+      fetchDebts,
+      fetchSavings,
+      fetchCategories,
+      fetchBudget,
+      handleCloneBudget,
       handleSaveBudget,
       handleActivateBudget,
       handleCreateCategory,
+      handleAddExistingCategory,
+      handleRemoveCategory,
+      handleRestoreCategory,
       handleToggleEditing,
       handleCategoryAllocationChange,
       formatCurrency,
@@ -382,6 +538,14 @@ export default function Budget() {
                       <span>{isEditing ? "Modo Ajuste" : "Ajustar Límites"}</span>
                     </button>
                   )}
+                  {isEditing && (
+                    <button
+                      onClick={() => setIsCommitmentsOpen(true)}
+                      className="flex items-center gap-1.5 text-xs font-bold text-[#005226] bg-[#005226]/10 hover:bg-[#005226]/20 px-3 py-1.5 rounded-full transition-colors border-none cursor-pointer shadow-sm"
+                    >
+                      <IconPigMoney size={14} /> Vincular Deudas/Ahorros
+                    </button>
+                  )}
                   {canEdit && (
                     <button
                       onClick={() => setIsCategoryModalOpen(true)}
@@ -407,48 +571,138 @@ export default function Budget() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-col gap-4 sm:gap-6"
+            className="grid grid-cols-1 gap-4 sm:gap-6 items-start"
           >
-            {/* Summary Section */}
-            <motion.div variants={itemVariants} className="flex flex-col gap-2">
-              <div className="flex gap-2 items-center text-[10px] sm:text-xs text-outline font-black uppercase tracking-widest pl-2 select-none">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#008f43]" />
-                <span>Resumen de Ingresos</span>
-              </div>
-              <BudgetSummary />
-            </motion.div>
-
-            {/* Categories Section */}
-            <motion.div variants={itemVariants} className="flex flex-col gap-2">
-              <div className="flex gap-2 items-center text-[10px] sm:text-xs text-outline font-black uppercase tracking-widest pl-2 select-none">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#008f43]" />
-                <span>Desglose por Categorías</span>
-              </div>
-
-              {!budget ? (
-                <div className="text-center py-10 bg-surface-container-lowest rounded-2xl border border-outline-variant/20">
-                  <p className="text-outline mb-4">No hay presupuesto configurado para este mes.</p>
-                  {currentDate >= new Date(new Date().getFullYear(), new Date().getMonth(), 1) && (
-                    <Button variant="primary" onClick={() => setIsModalOpen(true)}>
-                      Crear Presupuesto
-                    </Button>
-                  )}
+            {/* Left Column: Summary and Categories */}
+            <div className="flex flex-col gap-4 sm:gap-6">
+              {/* Summary Section */}
+              <motion.div variants={itemVariants} className="flex flex-col gap-2">
+                <div className="flex gap-2 items-center text-[10px] sm:text-xs text-outline font-black uppercase tracking-widest pl-2 select-none">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#008f43]" />
+                  <span>Resumen de Ingresos</span>
                 </div>
-              ) : (
-                <motion.div
-                  variants={containerVariants}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4"
-                >
-                  {displayCategories.map((cat) => (
-                    <motion.div key={cat.id} variants={itemVariants}>
-                      <BudgetCategoryCard
-                        category={cat}
-                      />
-                    </motion.div>
-                  ))}
-                </motion.div>
+                <BudgetSummary />
+              </motion.div>
+
+              {/* Categories Section */}
+              <motion.div variants={itemVariants} className="flex flex-col gap-2">
+                <div className="flex gap-2 items-center text-[10px] sm:text-xs text-outline font-black uppercase tracking-widest pl-2 select-none">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#008f43]" />
+                  <span>Desglose por Categorías</span>
+                </div>
+
+                {!budget ? (
+                  <div className="text-center py-10 bg-surface-container-lowest rounded-2xl border border-outline-variant/20">
+                    <p className="text-outline mb-4">No hay presupuesto configurado para este mes.</p>
+                    {currentDate >= new Date(new Date().getFullYear(), new Date().getMonth(), 1) && (
+                      <Button variant="primary" onClick={() => setIsWizardOpen(true)}>
+                        Crear Presupuesto
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <motion.div
+                    variants={containerVariants}
+                    className="flex flex-col gap-6"
+                  >
+                    {/* Sección de Deudas */}
+                    {displayCategories.some(c => !c.isMarkedForDeletion && isDebt(c.id, c.name)) && (
+                      <div className="flex flex-col gap-3">
+                        <h5 className="text-[10px] font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest pl-2">
+                          💳 Deudas y Obligaciones
+                        </h5>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                          {displayCategories.filter(c => !c.isMarkedForDeletion && isDebt(c.id, c.name)).map((cat, index) => (
+                            <motion.div
+                              key={cat.id}
+                              initial={{ opacity: 0, y: 15 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ type: "spring", stiffness: 80, damping: 12, delay: index * 0.04 }}
+                            >
+                              <BudgetCategoryCard category={cat} />
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Sección de Ahorros */}
+                    {displayCategories.some(c => !c.isMarkedForDeletion && isSaving(c.name)) && (
+                      <div className="flex flex-col gap-3">
+                        <h5 className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest pl-2">
+                          🐷 Metas de Ahorro
+                        </h5>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                          {displayCategories.filter(c => !c.isMarkedForDeletion && isSaving(c.name)).map((cat, index) => (
+                            <motion.div
+                              key={cat.id}
+                              initial={{ opacity: 0, y: 15 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ type: "spring", stiffness: 80, damping: 12, delay: index * 0.04 }}
+                            >
+                              <BudgetCategoryCard category={cat} />
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Sección de Gastos Generales */}
+                    {displayCategories.some(c => !c.isMarkedForDeletion && !isDebt(c.id, c.name) && !isSaving(c.name)) && (
+                      <div className="flex flex-col gap-3">
+                        <h5 className="text-[10px] font-black text-[#005226] dark:text-[#008f43] uppercase tracking-widest pl-2">
+                          📊 Gastos Planificados
+                        </h5>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                          {displayCategories.filter(c => !c.isMarkedForDeletion && !isDebt(c.id, c.name) && !isSaving(c.name)).map((cat, index) => (
+                            <motion.div
+                              key={cat.id}
+                              initial={{ opacity: 0, y: 15 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ type: "spring", stiffness: 80, damping: 12, delay: index * 0.04 }}
+                            >
+                              <BudgetCategoryCard category={cat} />
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Categorías a Eliminar (Con línea divisora) */}
+                    {displayCategories.some(c => c.isMarkedForDeletion) && (
+                      <div className="flex flex-col gap-4 mt-4 select-none">
+                        <div className="flex items-center gap-3">
+                          <div className="h-px bg-error/20 flex-1 animate-pulse" />
+                          <span className="text-[10px] sm:text-xs font-black text-error/60 uppercase tracking-widest px-2">
+                            Categorías a eliminar (se borrarán al guardar)
+                          </span>
+                          <div className="h-px bg-error/20 flex-1 animate-pulse" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 opacity-75">
+                          {displayCategories.filter(c => c.isMarkedForDeletion).map((cat, index) => (
+                            <motion.div
+                              key={cat.id}
+                              initial={{ opacity: 0, y: 15 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ type: "spring", stiffness: 100, damping: 15, delay: index * 0.04 }}
+                            >
+                              <BudgetCategoryCard category={cat} />
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </motion.div>
+            </div>
+
+            {/* Commitments Drawer */}
+            <AnimatePresence>
+              {isCommitmentsOpen && (
+                <CommitmentsSidebar onClose={() => setIsCommitmentsOpen(false)} />
               )}
-            </motion.div>
+            </AnimatePresence>
           </motion.div>
         )}
 
@@ -465,6 +719,11 @@ export default function Budget() {
         {/* Global Save Button for Unsaved Changes / Draft Mode */}
         <AnimatePresence>
           <SaveBudgetBanner />
+        </AnimatePresence>
+
+        {/* Onboarding Budget Wizard */}
+        <AnimatePresence>
+          <BudgetWizardModal />
         </AnimatePresence>
       </section>
     </BudgetContext>

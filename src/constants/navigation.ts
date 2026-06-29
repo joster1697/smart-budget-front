@@ -5,7 +5,8 @@ import {
   IconBrain,
   IconMessageChatbot,
   IconChartPie,
-  IconReportMoney
+  IconReportMoney,
+  IconPigMoney
 } from "@tabler/icons-react";
 
 export const NAV_ITEMS = [
@@ -61,5 +62,12 @@ export const NAV_ITEMS = [
     sidebarLabel: "Debts",
     mobileLabel: "Analizador de deudas",
     greeting: "He preparado el diagnóstico de tus compromisos de deuda y proyecciones de libertad financiera."
+  },
+  {
+    to: "/dashboard/savings",
+    icon: IconPigMoney,
+    sidebarLabel: "Savings",
+    mobileLabel: "Ver mis ahorros",
+    greeting: "¡Hola! Aquí tienes el detalle de tus metas de ahorro, bolsillos virtuales y proyecciones de crecimiento."
   }
 ];

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   IconUpload,
@@ -11,7 +12,8 @@ import {
   IconX,
   IconFileSpreadsheet,
   IconCoins,
-  IconCheck
+  IconCheck,
+  IconSparkles
 } from "@tabler/icons-react";
 import debtService, {
   Debt,
@@ -21,6 +23,9 @@ import debtService, {
 } from "../../services/debtService";
 
 export default function DebtAnalyzer() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   // Page States
   const [debts, setDebts] = useState<Debt[]>([]);
   const [selectedDebtId, setSelectedDebtId] = useState<string | null>(null);
@@ -87,6 +92,12 @@ export default function DebtAnalyzer() {
   // Fetch debts on mount
   useEffect(() => {
     loadDebts();
+    
+    // Auto-open manual form if guided mode is active and no specific id is specified
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("guided") === "true" && !searchParams.get("id")) {
+      openManualForm();
+    }
   }, []);
 
   const loadDebts = async () => {
@@ -95,8 +106,15 @@ export default function DebtAnalyzer() {
       const response = await debtService.getDebts();
       setDebts(response.debts);
       if (response.debts.length > 0) {
-        // Select the first debt by default
-        handleSelectDebt(response.debts[0].id);
+        const searchParams = new URLSearchParams(window.location.search);
+        const urlId = searchParams.get("id");
+        const match = response.debts.find(d => d.id === urlId);
+        if (match) {
+          handleSelectDebt(match.id);
+        } else {
+          // Select the first debt by default
+          handleSelectDebt(response.debts[0].id);
+        }
       } else {
         setSelectedDebtId(null);
         setSelectedDebtDetails(null);
@@ -226,6 +244,7 @@ export default function DebtAnalyzer() {
       });
       
       setShowValidationModal(true);
+      setShowManualForm(false);
     } catch (err: any) {
       setUploadError(err.message || "Error al procesar el archivo. Revisa que sea un PDF válido.");
     } finally {
@@ -257,6 +276,17 @@ export default function DebtAnalyzer() {
       const response = await debtService.validateDebt(formFields);
       setShowValidationModal(false);
       setShowManualForm(false);
+
+      const searchParams = new URLSearchParams(location.search);
+      if (searchParams.get("guided") === "true") {
+        // Auto-sync the new debt with 0 planned extra payment initially
+        await debtService.syncBudget(response.debt.id, true, 0);
+        // Reload debts list and select the new debt so they can analyze it
+        const updatedResponse = await debtService.getDebts();
+        setDebts(updatedResponse.debts);
+        handleSelectDebt(response.debt.id);
+        return;
+      }
       
       // Reload debts list
       const updatedResponse = await debtService.getDebts();
@@ -524,8 +554,49 @@ export default function DebtAnalyzer() {
     );
   };
 
+  const searchParams = new URLSearchParams(location.search);
+  const isGuided = searchParams.get("guided") === "true";
+  const isWizard = searchParams.get("wizard") === "true";
+  const currentStep = searchParams.get("step");
+
+  const handleBackToBudget = () => {
+    if (isWizard) {
+      navigate(`/dashboard/budget?wizard=true&step=${currentStep || "2"}`);
+    } else {
+      navigate("/dashboard/budget?editing=true");
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* Guided Banner */}
+      {isGuided && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-[#005226]/10 to-[#008f43]/5 border border-[#005226]/20 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
+        >
+          <div className="flex items-start gap-3">
+            <div className="p-2.5 bg-[#005226]/10 text-[#005226] rounded-xl flex items-center justify-center shrink-0">
+              <IconSparkles size={20} className="animate-pulse text-[#008f43]" />
+            </div>
+            <div>
+              <h3 className="text-sm font-black text-on-surface font-manrope">
+                Modo Asistido: Registro de Deudas
+              </h3>
+              <p className="text-xs text-muted font-medium mt-0.5">
+                Para completar la planeación, ingresa tu deuda de forma manual o subiendo tu PDF. El agente la sincronizará con tu presupuesto automáticamente.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleBackToBudget}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-outline-variant/60 text-xs font-bold text-on-surface hover:bg-surface-variant/20 transition-all cursor-pointer whitespace-nowrap self-start sm:self-center"
+          >
+            ← Volver al Presupuesto
+          </button>
+        </motion.div>
+      )}
       {/* Header Area */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -1242,6 +1313,37 @@ export default function DebtAnalyzer() {
                       <span>Deuda Simple / Familiar / Tasa Cero</span>
                     </button>
                   </div>
+                </div>
+              )}
+
+              {/* Opción de Subir PDF (OCR) */}
+              {showManualForm && (
+                <div className="mb-6 bg-[#005226]/5 border border-dashed border-[#005226]/20 rounded-2xl p-4 flex flex-col items-center text-center gap-2.5">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#005226]/10 text-[#005226]">
+                    <IconUpload size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-on-surface font-manrope">¿Tienes el estado de cuenta en PDF?</h4>
+                    <p className="text-[10px] text-muted font-medium mt-0.5 max-w-sm">
+                      Sube el documento PDF oficial y nuestra IA extraerá el saldo, intereses y plazos automáticamente para que no tengas que rellenar el formulario.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#005226] hover:bg-[#003d1c] text-xs font-bold text-white transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                  >
+                    {isUploading ? (
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <IconUpload size={14} />
+                    )}
+                    <span>{isUploading ? "Procesando..." : "Subir PDF de Estado de Cuenta"}</span>
+                  </button>
+                  {uploadError && (
+                    <p className="text-[10px] font-bold text-error mt-1">{uploadError}</p>
+                  )}
                 </div>
               )}
 

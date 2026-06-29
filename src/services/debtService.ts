@@ -13,6 +13,7 @@ export interface Debt {
   operation_number?: string;
   sync_budget?: boolean;
   planned_extra_payment?: number;
+  category_id?: string;
   createdAt?: string;
 }
 

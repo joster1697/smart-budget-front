@@ -18,6 +18,7 @@ export interface UpdateBudgetInput {
 }
 
 export interface BudgetCategoryStatus {
+  id?: string;
   category_id?: string;
   category_name: string;
   allocated_amount: number;
